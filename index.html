@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Khansa Reg</title>
+
+    <link rel="stylesheet" href="./src/vendor/bootstrap441/css/bootstrap.min.css">
+</head>
+
+<body>
+    <h3 class="display-3" id="jam"></h3>
+    <div id="app">
+    </div>
+
+    <script src="./src/vendor/bootstrap441/js/bootstrap.min.js"></script>
+
+    <script type="module" src="./src/vendor/vue/vue-router.js"></script>
+    <script type="module" src="./src/main.js"></script>
+    <script>
+        (function () {
+            function getJam() {
+                const tglSekarang = new Date()
+                const jamEl = document.getElementById('jam')
+
+                const jam = tglSekarang.getHours()
+                const menit = tglSekarang.getMinutes()
+                const detik = tglSekarang.getSeconds()
+
+                jamEl.innerHTML = `${jam}:${menit}:${detik}`
+            }
+
+            setInterval(getJam, 1000)
+        })()
+    </script>
+</body>
+
+</html>
