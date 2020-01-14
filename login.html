@@ -13,6 +13,7 @@
 <body>
     <div id="app">
         <div class="container">
+            <h3 style="margin-top: .5em">Login Khanza Reg</h3>
             <br />
             <form @submit.prevent="login">
                 <div class="form-group">
@@ -23,10 +24,12 @@
                     <label for="pwd">Password:</label>
                     <input type="password" class="form-control" v-model="password">
                 </div>
-                <button class="btn btn-default" id="btn-login" type="submit">Login</button>
-                <button class="btn btn-default" id="btn-exit" type="button" @click="keluar">Keluar</button>
+                <button class="btn btn-primary" id="btn-login" type="submit">Login</button>
+                <button class="btn btn-default float-right" id="btn-exit" type="button" @click="keluar">Keluar</button>
             </form>
-            <label>{{notif}}</label>
+            <div v-if="notif" class="alert alert-danger" role="alert" style="margin-top: .5em">
+                {{notif}}
+            </div>
         </div>
     </div>
 

@@ -20,7 +20,7 @@ function createWindow() {
     childWindow = new BrowserWindow({
         parent: mainWindow,
         width: 400,
-        height: 300,
+        height: 320,
         frame: false,
         resizable: false,
         webPreferences: { nodeIntegration: true }
