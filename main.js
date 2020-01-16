@@ -35,7 +35,7 @@ function createWindow() {
 ipcMain.on('entry-accepted', (event, arg) => {
     if (arg === 'ping') {
         mainWindow.show()
-        childWindow.hide()
+        childWindow.close()
     }
 })
 
