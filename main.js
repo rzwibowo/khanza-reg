@@ -9,7 +9,8 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
-        show: false
+        show: false,
+        webPreferences: { nodeIntegration: true }
     })
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),

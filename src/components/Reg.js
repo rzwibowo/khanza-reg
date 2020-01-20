@@ -1,4 +1,8 @@
-const RegComp = {
+const remote = require('electron').remote
+
+import { RegInapD } from './RegInapD.js'
+
+const Reg = {
     template: `
         <div class="container-fluid p-0">
             <div class="row m-0">
@@ -101,44 +105,44 @@ const RegComp = {
                         <div class="card-body px-1">
                             <h5 class="card-title">Entri Kunjungan</h5>
                             <div class="form-group">
-                                <label for="">Tanggal</label>
-                                <input type="date" name="" id="" class="form-control">
+                                <label>Tanggal</label>
+                                <input type="date" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label for="">Jam</label>
-                                <input type="time" name="" id="" class="form-control" step="1">
+                                <label>Jam</label>
+                                <input type="time" class="form-control" step="1">
                             </div>
                             <div class="form-group">
-                                <label for="">Jenis Pembayaran</label>
+                                <label>Jenis Pembayaran</label>
                                 <div>
                                     <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select name="" id="" class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="">Asal Rujukan</label>
+                                <label>Asal Rujukan</label>
                                 <div>
                                     <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select name="" id="" class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="">Ruang Poliklinik</label>
+                                <label>Ruang Poliklinik</label>
                                 <div>
                                     <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select name="" id="" class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="">Dokter Periksa</label>
+                                <label>Dokter Periksa</label>
                                 <div>
                                     <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select name="" id="" class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-sm btn-primary float-right">Simpan</button>
-                                <button type="button" class="btn btn-sm btn-secondary">Pasien Baru</button>
+                                <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
                                 <button type="button" class="btn btn-sm btn-secondary">Kosongkan</button>
                             </div>
                         </div>
@@ -149,6 +153,8 @@ const RegComp = {
                         <div class="col-md-12">
                             <button type="button" class="btn btn-sm btn-secondary" 
                                 @click="visible = !visible">{{ visible ? '&lt;' : '&gt;' }} Tugel Form </button>
+                            <button type="button" class="btn btn-sm btn-secondary" 
+                                @click="dvisible = !dvisible">Open </button>
                         </div>
                     </div>
                     <div class="table-responsive" style="height: 90vh;">
@@ -170,13 +176,22 @@ const RegComp = {
                     </div>
                 </div>
             </div>
+            <RegInapD v-if="dvisible" @close="dvisible = false"></RegInapD>
         </div>
     `,
+    components: {
+        RegInapD
+    },
     data: function () {
         return {
-            visible: true
+            visible: true,
+            dvisible: false
         }
+    },
+    mounted: function () {
+        const name =  require('./package.json').name
+        remote.getCurrentWindow().setTitle(`${name} | Registrasi Rawat Jalan`)
     }
 }
 
-export { RegComp }
+export { Reg }
