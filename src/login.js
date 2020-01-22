@@ -15,6 +15,9 @@ new Vue({
             w: remote.getCurrentWindow()
         }
     },
+    mounted: function() {
+        this.$refs.username.focus()
+    },
     methods: {
         login: function () {
             if (this.username === this.udummy && this.password === this.pdummy) {
