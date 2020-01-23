@@ -1,5 +1,3 @@
-const remote = require('electron').remote
-
 const RegInapD = {
     template: `
         <div class="modal" tabindex="-1" role="dialog" id="modal1">

@@ -8,6 +8,7 @@
     <title>Khansa Reg</title>
 
     <link rel="stylesheet" href="./src/vendor/bootstrap441/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./src/vendor/vue-popper/vue-popper.css">
     <style>
         label,
         input {
@@ -32,30 +33,13 @@
 </head>
 
 <body>
-    <h5 class="display-5" id="jam"></h5>
     <div id="app">
     </div>
 
-    <script src="./src/vendor/bootstrap441/js/bootstrap.min.js"></script>
-
+    <script src="./src/vendor/vue-popper/popper.min.js"></script>
+    <script src="./src/vendor/vue-popper/vue-popper.min.js"></script>
     <script type="module" src="./src/vendor/vue/vue-router.js"></script>
     <script type="module" src="./src/main.js"></script>
-    <script>
-        (function () {
-            function getJam() {
-                const tglSekarang = new Date()
-                const jamEl = document.getElementById('jam')
-
-                const jam = tglSekarang.getHours()
-                const menit = tglSekarang.getMinutes()
-                const detik = tglSekarang.getSeconds()
-
-                jamEl.innerHTML = `${jam}:${menit}:${detik}`
-            }
-
-            setInterval(getJam, 1000)
-        })()
-    </script>
 </body>
 
 </html>

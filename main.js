@@ -1,6 +1,7 @@
 const { electron, app, BrowserWindow, Menu, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
+const menu = require('./menu')
 
 let mainWindow
 let childWindow
@@ -32,44 +33,8 @@ function createWindow() {
         slashes: true
     }))
 
-    const menu = Menu.buildFromTemplate([
-        {
-            label: 'Aplikasi',
-            submenu: [
-                {
-                    label: 'Toggle Developer Tools',
-                    accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-                    click(item, focusedWindow) {
-                        if (focusedWindow) focusedWindow.webContents.toggleDevTools()
-                    }
-                },
-                {
-                    label: 'Keluar',
-                    click() {
-                        app.quit()
-                    }
-                }
-            ]
-        },
-        {
-            label: 'Pelayanan',
-            submenu: [
-                {
-                    label: 'Rawat Jalan'
-                },
-                {
-                    label: 'Rawat Inap'
-                }
-            ]
-        },
-        {
-            label: 'Tentang',
-            click(menuItem, browserWindow, event) {
-                browserWindow.loadURL(`file://${__dirname}/index.html#/about`)
-            }
-        }
-    ])
-    Menu.setApplicationMenu(menu)
+    const menuitem = Menu.buildFromTemplate(menu.menu)
+    Menu.setApplicationMenu(menuitem)
 }
 
 ipcMain.on('entry-accepted', (event, arg) => {

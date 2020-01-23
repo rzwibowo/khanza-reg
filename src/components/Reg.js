@@ -1,6 +1,7 @@
 const remote = require('electron').remote
 
 import { RegInapD } from './RegInapD.js'
+import { CariPasienD } from './CariPasienD.js'
 
 const Reg = {
     template: `
@@ -15,7 +16,8 @@ const Reg = {
                                 <div class="input-group">
                                     <input type="text" class="form-control form-control-sm">
                                     <div class="input-group-append">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button">...</button>
+                                        <button class="btn btn-sm btn-outline-secondary" type="button"
+                                            @click="dp_visible = !dp_visible">...</button>
                                     </div>
                                 </div>
                             </div>
@@ -154,13 +156,14 @@ const Reg = {
                             <button type="button" class="btn btn-sm btn-secondary" 
                                 @click="visible = !visible">{{ visible ? '&lt;' : '&gt;' }} Tugel Form </button>
                             <button type="button" class="btn btn-sm btn-secondary" 
-                                @click="dvisible = !dvisible">Open </button>
+                                @click="di_visible = !di_visible">Open </button>
                         </div>
                     </div>
                     <div class="table-responsive" style="height: 90vh;">
                         <table class="table table-sm table-hover table-bordered table-striped">
                             <thead>
                                 <tr>
+                                    <th></th>
                                     <th>No. Reg</th>
                                     <th>Tanggal</th>
                                     <th>Jam</th>
@@ -172,20 +175,116 @@ const Reg = {
                                     <th>Status</th>
                                 </tr>
                             </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <popper
+                                            trigger="clickToOpen"
+                                            :options="{
+                                            placement: 'top',
+                                            modifiers: { offset: { offset: '0,10px' } }
+                                            }"
+                                            visible-arrow="false">
+                                            <div class="popper">
+                                                <a class="dropdown-item" href="#">Action</a>
+                                                <a class="dropdown-item" href="#">Another action</a>
+                                                <a class="dropdown-item" href="#">Something else here</a>
+                                            </div>
+                                        
+                                            <button class="btn btn-secondary btn-sm" slot="reference">
+                                                ...
+                                            </button>
+                                        </popper>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <popper
+                                            trigger="clickToOpen"
+                                            :options="{
+                                            placement: 'top',
+                                            modifiers: { offset: { offset: '0,10px' } }
+                                            }"
+                                            visible-arrow="false">
+                                            <div class="popper">
+                                                <a class="dropdown-item" href="#">Action</a>
+                                                <a class="dropdown-item" href="#">Another action</a>
+                                                <a class="dropdown-item" href="#">Something else here</a>
+                                            </div>
+                                        
+                                            <button class="btn btn-secondary btn-sm" slot="reference">
+                                                ...
+                                            </button>
+                                        </popper>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <popper
+                                            trigger="clickToOpen"
+                                            :options="{
+                                            placement: 'top',
+                                            modifiers: { offset: { offset: '0,10px' } }
+                                            }"
+                                            visible-arrow="false">
+                                            <div class="popper">
+                                                <a class="dropdown-item" href="#">Action</a>
+                                                <a class="dropdown-item" href="#">Another action</a>
+                                                <a class="dropdown-item" href="#">Something else here</a>
+                                            </div>
+                                        
+                                            <button class="btn btn-secondary btn-sm" slot="reference">
+                                                ...
+                                            </button>
+                                        </popper>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <RegInapD v-if="dvisible" @close="dvisible = false"></RegInapD>
+            <RegInapD v-show="di_visible" @close="di_visible = false"></RegInapD>
+            <CariPasienD v-show="dp_visible" @close="dp_visible = false"></CariPasienD>
         </div>
     `,
     components: {
-        RegInapD
+        'popper': VuePopper,
+        RegInapD,
+        CariPasienD
     },
     data: function () {
         return {
             visible: true,
-            dvisible: false
+            di_visible: false,
+            dp_visible: false
         }
     },
     mounted: function () {
