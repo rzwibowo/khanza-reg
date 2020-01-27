@@ -11,8 +11,14 @@
     <link rel="stylesheet" href="./src/vendor/vue-popper/vue-popper.css">
     <style>
         label,
-        input {
+        input,
+        a.dropdown-item {
             font-size: 12px;
+        }
+
+        a.dropdown-item:hover {
+            color: #fff;
+            background-color: cornflowerblue;
         }
 
         .form-group {
@@ -36,8 +42,6 @@
     <div id="app">
     </div>
 
-    <script src="./src/vendor/vue-popper/popper.min.js"></script>
-    <script src="./src/vendor/vue-popper/vue-popper.min.js"></script>
     <script type="module" src="./src/vendor/vue/vue-router.js"></script>
     <script type="module" src="./src/main.js"></script>
 </body>
