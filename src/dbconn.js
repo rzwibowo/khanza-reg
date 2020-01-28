@@ -11,24 +11,22 @@ class dbUtil {
         dateStrings: true
     })
 
-    doQuery(q, cb) {
-        let result
+    doQuery(q, args) {
+        return new Promise((resolve, reject) => {
+            this.connection.query(q, args, (err, rows) => {
+                if (err) { return reject(err) }
+                resolve(rows)
+            })
+        })
+    }
 
-        this.connection.connect(err => {
-            if (err) {
-                console.error(err.code)
-                console.error(err.fatal)
-            }
+    closeDb() {
+        return new Promise((resolve, reject) => {
+            this.connection.end(err => {
+                if (err) { return reject(err)}
+                resolve();
+            })
         })
-        this.connection.query(q, (err, rows, fields) => {
-            if (err) {
-                console.error('Terjadi kesalahan')
-                console.error(err)
-                return
-            }
-            cb(JSON.stringify(rows))
-        })
-        this.connection.end(() => { })
     }
 }
 

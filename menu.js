@@ -1,3 +1,5 @@
+const { app } = require('electron')
+
 const menu_ = [
     {
         label: 'Aplikasi',

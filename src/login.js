@@ -11,29 +11,45 @@ new Vue({
         return {
             username: '',
             password: '',
-            udummy: 'userku',
-            pdummy: 'passku',
             notif: '',
             w: remote.getCurrentWindow()
         }
     },
-    mounted: function() {
+    mounted: function () {
         this.$refs.username.focus()
     },
     methods: {
-        login: async function () {
+        login: function () {
             const db = new dbUtil()
-            let res = null
-            await db.doQuery(`select * from t_user where id_user = ${this.username} and username = '${this.password}'`, (data) => {
-                res = JSON.parse(data)
-                
-                if (res.length !== 0) {
-                    ipc.sendSync('entry-accepted', 'ping')
-                } else {
-                    this.w.setSize(400, 370)
-                    this.notif = 'Username atau Password salah'
-                }
-            })
+            let resAdmin = null
+            let resUser = null
+            db.doQuery(`SELECT * 
+                FROM admin 
+                WHERE usere=AES_ENCRYPT('${this.username}','nur') 
+                    AND passworde=AES_ENCRYPT('${this.password}','windi')`)
+                .then(res => { 
+                    resAdmin = res
+                    return db.doQuery(`SELECT * 
+                        FROM user 
+                        WHERE id_user=AES_ENCRYPT('${this.username}','nur') 
+                            AND password=AES_ENCRYPT('${this.password}','windi')`) 
+                })
+                .then(res => {
+                    resUser = res
+                    
+                    if (resAdmin.length !== 0 || resUser.length !== 0) {
+                        ipc.sendSync('entry-accepted', 'ping')
+                    } else {
+                        this.w.setSize(400, 370)
+                        this.notif = 'Username atau Password salah'
+                    }
+
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+
         },
         keluar: function () {
             ipc.sendSync('close')

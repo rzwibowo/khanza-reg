@@ -5,6 +5,8 @@ import '../vendor/vue-popper/vue-popper.min.js'
 import { RegInapD } from './RegInapD.js'
 import { CariPasienD } from './CariPasienD.js'
 
+import { dbUtil } from '../dbconn.js'
+
 const Reg = {
     template: `
         <div class="container-fluid p-0">
@@ -157,6 +159,7 @@ const Reg = {
                         <div class="col-md-12">
                             <button type="button" class="btn btn-sm btn-secondary" 
                                 @click="visible = !visible">{{ visible ? '&lt;' : '&gt;' }} Tugel Form </button>
+                            <button type="button" class="btn btn-sm btn-secondary"> Refresh </button>
                             <button type="button" class="btn btn-sm btn-secondary" 
                                 @click="di_visible = !di_visible">Open </button>
                         </div>
@@ -167,9 +170,11 @@ const Reg = {
                                 <tr>
                                     <th></th>
                                     <th>No. Reg</th>
+                                    <th>No. RM</th>
                                     <th>Tanggal</th>
                                     <th>Jam</th>
                                     <th>Nama</th>
+                                    <th>Umur</th>
                                     <th>Tanggal Lahir</th>
                                     <th>Alamat</th>
                                     <th>Dokter</th>
@@ -178,7 +183,7 @@ const Reg = {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr v-for="pasien in pasiens" :key="pasien.no_reg">
                                     <td>
                                         <popper
                                             trigger="clickToOpen"
@@ -196,15 +201,17 @@ const Reg = {
                                             </button>
                                         </popper>
                                     </td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td>{{ pasien.no_reg }}</td>
+                                    <td>{{ pasien.no_rkm_medis }}</td>
+                                    <td>{{ pasien.tgl_registrasi }}</td>
+                                    <td>{{ pasien.jam_reg }}</td>
+                                    <td>{{ pasien.nm_pasien }}</td>
+                                    <td>{{ pasien.umur }}</td>
+                                    <td>{{ pasien.tgl_lahir }}</td>
+                                    <td>{{ pasien.alamat }}</td>
+                                    <td>{{ pasien.nm_dokter }}</td>
+                                    <td>{{ pasien.nm_poli }}</td>
+                                    <td>{{ pasien.stts_daftar }}</td>
                                 </tr>
                                 <tr>
                             </tbody>
@@ -223,14 +230,60 @@ const Reg = {
     },
     data: function () {
         return {
+            pasiens: [],
             visible: true,
             di_visible: false,
             dp_visible: false
         }
     },
     mounted: function () {
-        const name =  require('./package.json').name
-        remote.getCurrentWindow().setTitle(`${name} | Registrasi Rawat Jalan`)
+        this.setWindowTitle()
+        this.getData()
+    },
+    methods: {
+        getData: function () {
+            const tglHariIni = moment().format('YYYY-MM-DD')
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    reg_periksa.no_reg,
+                    reg_periksa.tgl_registrasi,
+                    reg_periksa.jam_reg,
+                    dokter.nm_dokter,
+                    pasien.no_rkm_medis,
+                    pasien.nm_pasien,
+                    pasien.jk,
+                    pasien.alamat,
+                    pasien.tgl_lahir,
+                    CONCAT(reg_periksa.umurdaftar, ' ', reg_periksa.sttsumur) AS umur,
+                    poliklinik.nm_poli,
+                    reg_periksa.stts_daftar
+                FROM
+                    reg_periksa
+                LEFT JOIN dokter ON
+                    reg_periksa.kd_dokter = dokter.kd_dokter
+                LEFT JOIN pasien ON
+                    reg_periksa.no_rkm_medis = pasien.no_rkm_medis
+                LEFT JOIN poliklinik ON
+                    reg_periksa.kd_poli = poliklinik.kd_poli
+                LEFT JOIN penjab ON
+                    reg_periksa.kd_pj = penjab.kd_pj
+                WHERE
+                    poliklinik.kd_poli <> 'IGDK'
+                    AND tgl_registrasi = '${tglHariIni}'
+                ORDER BY
+                    reg_periksa.tgl_registrasi,reg_periksa.jam_reg DESC`)
+            .then(res => {
+                this.pasiens = res
+                return db.closeDb()
+            }, err => {
+                return db.closeDb().then(() => { throw err })
+            })
+            .catch(err => console.error(err))
+        },
+        setWindowTitle: function () {
+            const name =  require('./package.json').name
+            remote.getCurrentWindow().setTitle(`${name} | Registrasi Rawat Jalan`)
+        }
     }
 }
 
