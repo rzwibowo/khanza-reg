@@ -176,6 +176,7 @@ const Reg = {
                                     <th>Nama</th>
                                     <th>Umur</th>
                                     <th>Tanggal Lahir</th>
+                                    <th>JK</th>
                                     <th>Alamat</th>
                                     <th>Dokter</th>
                                     <th>Klinik</th>
@@ -208,6 +209,7 @@ const Reg = {
                                     <td>{{ pasien.nm_pasien }}</td>
                                     <td>{{ pasien.umur }}</td>
                                     <td>{{ pasien.tgl_lahir }}</td>
+                                    <td>{{ pasien.jk }}</td>
                                     <td>{{ pasien.alamat }}</td>
                                     <td>{{ pasien.nm_dokter }}</td>
                                     <td>{{ pasien.nm_poli }}</td>
