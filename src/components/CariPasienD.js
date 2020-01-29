@@ -44,10 +44,10 @@ const CariPasienD = {
                                 </thead>
                                 <tbody>
                                     <tr v-for="pasien in pasiens" :key="pasien.no_rkm_medis">
-                                        <td>{{pasien.no_rkm_medis}}</td>
+                                        <td><a href="#">{{pasien.no_rkm_medis}}</a></td>
                                         <td>{{pasien.nm_pasien}}</td>
                                         <td>{{pasien.jk}}</td>
-                                        <td>{{pasien.tgl_lahir}}</td>
+                                        <td>{{moment(pasien.tgl_lahir).format('DD-MM-YYYY')}}</td>
                                         <td>{{pasien.alamat}}</td>
                                     </tr>
                                 </tbody>
@@ -65,7 +65,7 @@ const CariPasienD = {
             pasiens: []
         }
     },
-    mounted: function () {
+    created: function () {
         this.getData()
     },
     methods: {

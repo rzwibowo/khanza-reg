@@ -1,4 +1,7 @@
+require('dotenv').config()
 const remote = require('electron').remote
+const hmac_sha256 = require('crypto-js/hmac-sha256')
+const enc_base64 = require('crypto-js/enc-base64')
 
 import '../vendor/vue-popper/vue-popper.min.js'
 
@@ -16,7 +19,7 @@ const Reg = {
                         <div class="card-body px-1">
                             <h5 class="card-title">Biodata Pasien</h5>
                             <div class="form-group">
-                                <label>No. Pasien</label>
+                                <label>No. RM</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control form-control-sm">
                                     <div class="input-group-append">
@@ -33,11 +36,13 @@ const Reg = {
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label>NIK</label>
-                                        <input type="text" class="form-control form-control-sm" readonly>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            :value="pasien.nik" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button">Cek BPJS</button>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                                        @click="cekBpjs">Cek BPJS</button>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -151,6 +156,10 @@ const Reg = {
                                 <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
                                 <button type="button" class="btn btn-sm btn-secondary">Kosongkan</button>
                             </div>
+                            <hr>
+                            <template v-if="info_bpjs">
+
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -232,6 +241,10 @@ const Reg = {
     },
     data: function () {
         return {
+            pasien: {
+                nik: '3307052705950005'
+            },
+            info_bpjs: {},
             pasiens: [],
             visible: true,
             di_visible: false,
@@ -281,6 +294,24 @@ const Reg = {
                 return db.closeDb().then(() => { throw err })
             })
             .catch(err => console.error(err))
+        },
+        cekBpjs: function () {
+            const url = process.env.VC_URL
+            const id = process.env.VC_ID
+            const secret = process.env.VC_KEY
+            const timestamp = moment().unix()
+            const salt = `${id}&${timestamp}`
+            const signature = enc_base64.stringify(hmac_sha256(salt, secret))
+
+            axios.get(`${url}/Peserta/nik/${this.pasien.nik}/tglSEP/${moment().format('YYYY-MM-DD')}`,
+                { 
+                    'headers': {
+                        'X-cons-id': id,
+                        'X-timestamp': timestamp,
+                        'X-signature': signature
+                    } 
+                })
+            .then(res => console.log(res.data))
         },
         setWindowTitle: function () {
             const name =  require('./package.json').name
