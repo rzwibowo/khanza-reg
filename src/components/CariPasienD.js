@@ -16,15 +16,15 @@ const CariPasienD = {
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <label>Nama</label>
-                                    <input type="text" class="form-control form-control-sm"
-                                        v-model="nama">
+                                    <input type="search" class="form-control form-control-sm"
+                                        v-model="nama" @input="if (nama.length >= 3 || nama.length === 0) { getData() }">
                                 </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <label>Alamat</label>
-                                    <input type="text" class="form-control form-control-sm"
-                                        v-model="alamat">
+                                    <input type="search" class="form-control form-control-sm"
+                                        v-model="alamat" @input="if (alamat.length >= 5 || alamat.length === 0) { getData() }">
                                 </div>
                             </div>
                             <div class="col-md-2">
@@ -43,8 +43,13 @@ const CariPasienD = {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="pasien in pasiens" :key="pasien.no_rkm_medis">
-                                        <td><a href="#">{{pasien.no_rkm_medis}}</a></td>
+                                    <tr v-for="pasien in pasiens" :key="pasien.no_rkm_medis" 
+                                        @dblclick="selectPx(pasien.no_rkm_medis)">
+                                        <td>
+                                            <a href="#" @click="selectPx(pasien.no_rkm_medis)">
+                                                {{pasien.no_rkm_medis}}
+                                            </a>
+                                        </td>
                                         <td>{{pasien.nm_pasien}}</td>
                                         <td>{{pasien.jk}}</td>
                                         <td>{{moment(pasien.tgl_lahir).format('DD-MM-YYYY')}}</td>
@@ -72,11 +77,7 @@ const CariPasienD = {
         getData: function () {
             const db = new dbUtil()
             db.doQuery(`SELECT
-                    no_rkm_medis,
-                    nm_pasien,
-                    jk,
-                    tgl_lahir,
-                    alamat
+                    no_rkm_medis, nm_pasien, jk, tgl_lahir, alamat
                 FROM
                     pasien
                 ${this.nama || this.alamat ? 'WHERE ' : ''}
@@ -96,6 +97,10 @@ const CariPasienD = {
                 return db.closeDb().then(() => { throw err })
             })
             .catch(err => console.error(err))
+        },
+        selectPx: function (noRm) {
+            this.$emit('select-p', noRm)
+            this.$emit('close')
         }
     }
 }

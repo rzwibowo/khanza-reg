@@ -21,7 +21,8 @@ const Reg = {
                             <div class="form-group">
                                 <label>No. RM</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control form-control-sm">
+                                    <input type="search" class="form-control form-control-sm" 
+                                        v-model="pasien.no_rkm_medis" @keyup="cariPasien">
                                     <div class="input-group-append">
                                         <button class="btn btn-sm btn-outline-secondary" type="button"
                                             @click="dp_visible = !dp_visible">...</button>
@@ -30,14 +31,15 @@ const Reg = {
                             </div>
                             <div class="form-group">
                                 <label>Nama Lengkap</label>
-                                <input type="text" class="form-control form-control-sm" readonly>
+                                <input type="text" class="form-control form-control-sm" 
+                                    :value="pasien.nm_pasien" readonly>
                             </div>
                             <div class="row align-items-end">
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label>NIK</label>
                                         <input type="text" class="form-control form-control-sm" 
-                                            :value="pasien.nik" readonly>
+                                            :value="pasien.no_ktp" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -47,19 +49,22 @@ const Reg = {
                             </div>
                             <div class="form-group">
                                 <label>Alamat</label>
-                                <input type="text" class="form-control form-control-sm" readonly>
+                                <input type="text" class="form-control form-control-sm" 
+                                    :value="pasien.alamat_" readonly>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kecamatan</label>
-                                        <input type="text" class="form-control form-control-sm" readonly>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            :value="pasien.nm_kec" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kabupaten</label>
-                                        <input type="text" class="form-control form-control-sm" readonly>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            :value="pasien.nm_kab" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -67,13 +72,15 @@ const Reg = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Status Pasien</label>
-                                        <input type="text" class="form-control form-control-sm" readonly>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            :value="pasien.status" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>No. Asuransi</label>
-                                        <input type="text" class="form-control form-control-sm" readonly>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            :value="pasien.no_peserta" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -81,7 +88,8 @@ const Reg = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Tanggal Lahir</label>
-                                        <input type="text" class="form-control form-control-sm" readonly>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            :value="pasien.tgl_lahir" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -89,22 +97,27 @@ const Reg = {
                                         <label>Umur (Th/Bln/Hr)</label>
                                         <div>
                                             <input type="text" class="form-control form-control-sm" 
-                                                style="display: inline-block; width: 30%;" readonly>
+                                                style="display: inline-block; width: 30%;" 
+                                                :value="pasien.tahun" readonly>
                                             <input type="text" class="form-control form-control-sm" 
-                                                style="display: inline-block; width: 30%;" readonly>
+                                                style="display: inline-block; width: 30%;" 
+                                                :value="pasien.bulan" readonly>
                                             <input type="text" class="form-control form-control-sm" 
-                                                style="display: inline-block; width: 30%;" readonly>
+                                                style="display: inline-block; width: 30%;" 
+                                                :value="pasien.hari" readonly>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Penanggung Jawab</label>
-                                <input type="text" class="form-control form-control-sm" readonly>
+                                <label>Keluarga</label>
+                                <input type="text" class="form-control form-control-sm" 
+                                    :value="pasien.keluarga" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Nama Penanggung Jawab</label>
-                                <input type="text" class="form-control form-control-sm" readonly>
+                                <label>Nama Keluarga</label>
+                                <input type="text" class="form-control form-control-sm" 
+                                    :value="pasien.namakeluarga" readonly>
                             </div>
                             <button type="button" class="btn btn-sm btn-secondary">Cetak Kartu</button>
                             <button type="button" class="btn btn-sm btn-secondary">Cetak Form</button>
@@ -115,40 +128,48 @@ const Reg = {
                     <div class="card p-0">
                         <div class="card-body px-1">
                             <h5 class="card-title">Entri Kunjungan</h5>
-                            <div class="form-group">
-                                <label>Tanggal</label>
-                                <input type="date" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label>Jam</label>
-                                <input type="time" class="form-control" step="1">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Tanggal</label>
+                                        <input type="date" class="form-control form-control-sm" 
+                                            v-model="reg.tgl_registrasi">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Jam</label>
+                                        <input type="time" class="form-control form-control-sm" step="1"
+                                            v-model="reg.jam_reg">
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Jenis Pembayaran</label>
                                 <div>
-                                    <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
+                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Asal Rujukan</label>
                                 <div>
-                                    <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
+                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Ruang Poliklinik</label>
                                 <div>
-                                    <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
+                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Dokter Periksa</label>
                                 <div>
-                                    <input type="text" class="form-control" style="display: inline-block; width: 25%;">
-                                    <select class="form-control" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
+                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
                                 </div>
                             </div>
                             <div>
@@ -157,9 +178,36 @@ const Reg = {
                                 <button type="button" class="btn btn-sm btn-secondary">Kosongkan</button>
                             </div>
                             <hr>
-                            <template v-if="info_bpjs">
-
-                            </template>
+                            <div class="alert alert-info" role="alert" v-show="Object.keys(info_bpjs).length > 0">
+                                <h5>INFORMASI BPJS</h5>
+                                <div class="form-group">
+                                    <label>No. BPJS</label>
+                                    <input type="text" class="form-control-plaintext form-control-sm" 
+                                        readonly="readonly" :value="info_bpjs.no_bpjs">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nama</label>
+                                    <input type="text" class="form-control-plaintext form-control-sm" 
+                                        readonly="readonly" :value="info_bpjs.nama">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jenis</label>
+                                    <input type="text" class="form-control-plaintext form-control-sm" 
+                                        readonly="readonly" :value="info_bpjs.jenis">
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label>Kelas</label>
+                                        <input type="text" class="form-control-plaintext form-control-sm" 
+                                            readonly="readonly" :value="info_bpjs.kelas">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>Status</label>
+                                        <input type="text" class="form-control-plaintext form-control-sm" 
+                                            readonly="readonly" :value="info_bpjs.status">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -231,7 +279,7 @@ const Reg = {
                 </div>
             </div>
             <RegInapD v-show="di_visible" @close="di_visible = false"></RegInapD>
-            <CariPasienD v-show="dp_visible" @close="dp_visible = false"></CariPasienD>
+            <CariPasienD v-show="dp_visible" @close="dp_visible = false" @select-p="getData"></CariPasienD>
         </div>
     `,
     components: {
@@ -241,11 +289,13 @@ const Reg = {
     },
     data: function () {
         return {
-            pasien: {
-                nik: '3307052705950005'
-            },
-            info_bpjs: {},
+            pasien: {},
             pasiens: [],
+            info_bpjs: {},
+            reg: {
+                tgl_reg: '',
+                jam_reg: ''
+            },
             visible: true,
             di_visible: false,
             dp_visible: false
@@ -253,40 +303,41 @@ const Reg = {
     },
     mounted: function () {
         this.setWindowTitle()
-        this.getData()
+        this.getList()
+        this.defaultTgl()
+        setInterval(()=>{this.defaultJam()}, 1000)
     },
     methods: {
-        getData: function () {
+        defaultTgl: function () {
+            this.reg.tgl_registrasi = moment().format('YYYY-MM-DD')
+        },
+        defaultJam: function () {
+            this.reg.jam_reg = moment().format('HH:mm:ss')
+        },
+        getList: function () {
             const tglHariIni = moment().format('YYYY-MM-DD')
             const db = new dbUtil()
             db.doQuery(`SELECT
-                    reg_periksa.no_reg,
-                    reg_periksa.tgl_registrasi,
-                    reg_periksa.jam_reg,
-                    dokter.nm_dokter,
-                    pasien.no_rkm_medis,
-                    pasien.nm_pasien,
-                    pasien.jk,
-                    pasien.alamat,
-                    pasien.tgl_lahir,
-                    CONCAT(reg_periksa.umurdaftar, ' ', reg_periksa.sttsumur) AS umur,
-                    poliklinik.nm_poli,
-                    reg_periksa.stts_daftar
+                    aa.no_reg, aa.tgl_registrasi, aa.jam_reg,
+                    bb.nm_dokter, cc.no_rkm_medis, cc.nm_pasien, cc.jk,
+                    cc.alamat, cc.tgl_lahir, 
+                    CONCAT(aa.umurdaftar, ' ', aa.sttsumur) AS umur,
+                    dd.nm_poli, aa.stts_daftar
                 FROM
-                    reg_periksa
-                LEFT JOIN dokter ON
-                    reg_periksa.kd_dokter = dokter.kd_dokter
-                LEFT JOIN pasien ON
-                    reg_periksa.no_rkm_medis = pasien.no_rkm_medis
-                LEFT JOIN poliklinik ON
-                    reg_periksa.kd_poli = poliklinik.kd_poli
-                LEFT JOIN penjab ON
-                    reg_periksa.kd_pj = penjab.kd_pj
+                    reg_periksa aa
+                LEFT JOIN dokter bb ON
+                    aa.kd_dokter = bb.kd_dokter
+                LEFT JOIN pasien cc ON
+                    aa.no_rkm_medis = cc.no_rkm_medis
+                LEFT JOIN poliklinik dd ON
+                    aa.kd_poli = dd.kd_poli
+                LEFT JOIN penjab ee ON
+                    aa.kd_pj = ee.kd_pj
                 WHERE
-                    poliklinik.kd_poli <> 'IGDK'
+                    dd.kd_poli <> 'IGDK'
                     AND tgl_registrasi = '${tglHariIni}'
                 ORDER BY
-                    reg_periksa.tgl_registrasi,reg_periksa.jam_reg DESC`)
+                    aa.tgl_registrasi, aa.jam_reg DESC`)
             .then(res => {
                 this.pasiens = res
                 return db.closeDb()
@@ -294,6 +345,50 @@ const Reg = {
                 return db.closeDb().then(() => { throw err })
             })
             .catch(err => console.error(err))
+        },
+        getData: function (noRm) {
+            const tglHariIni = moment().format('YYYY-MM-DD')
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    nm_pasien, no_ktp, CONCAT(alamat, ', ', bb.nm_kel) AS alamat_,
+                    cc.nm_kec, dd.nm_kab, namakeluarga, keluarga,
+                    IF(tgl_daftar = '${tglHariIni}', 'Baru', 'Lama') AS status,
+                    no_peserta, tgl_lahir, 
+                    TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) AS tahun,
+                    (TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
+                        - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) DIV 12) * 12)) AS bulan,
+                    TIMESTAMPDIFF(DAY, DATE_ADD(
+                        DATE_ADD(tgl_lahir, INTERVAL TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) YEAR),
+                        INTERVAL TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
+                            - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) DIV 12) * 12) MONTH),
+                        CURDATE()) AS hari,
+                    keluarga,
+                    namakeluarga
+                FROM
+                    pasien aa
+                LEFT JOIN kelurahan bb ON
+                    aa.kd_kel = bb.kd_kel
+                LEFT JOIN kecamatan cc ON
+                    aa.kd_kec = cc.kd_kec
+                LEFT JOIN kabupaten dd ON
+                    aa.kd_kab = dd.kd_kab
+                WHERE
+                    no_rkm_medis = '${noRm}'`)
+            .then(res => {
+                this.pasien = res[0]
+                this.pasien.no_rkm_medis = noRm
+                return db.closeDb()
+            }, err => {
+                return db.closeDb().then(() => { throw err })
+            })
+            .catch(err => console.error(err))
+        },
+        cariPasien: function () {
+            if (this.pasien.no_rkm_medis.length >= 6) {
+                this.getData(this.pasien.no_rkm_medis)
+            } else if (this.pasien.no_rkm_medis.length === 0) {
+                this.pasien = {}
+            }
         },
         cekBpjs: function () {
             const url = process.env.VC_URL
@@ -311,7 +406,17 @@ const Reg = {
                         'X-signature': signature
                     } 
                 })
-            .then(res => console.log(res.data))
+            .then(res => {
+                const peserta = res.data.response.peserta
+                this.info_bpjs = {
+                    status: peserta.statusPeserta.keterangan,
+                    nama: peserta.nama,
+                    no_bpjs: peserta.noKartu,
+                    jenis: peserta.jenisPeserta.keterangan,
+                    kelas: peserta.hakKelas.keterangan
+                }
+            })
+            .catch(err => alert(err))
         },
         setWindowTitle: function () {
             const name =  require('./package.json').name
