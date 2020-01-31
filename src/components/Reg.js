@@ -22,7 +22,7 @@ const Reg = {
                                 <label>No. RM</label>
                                 <div class="input-group">
                                     <input type="search" class="form-control form-control-sm" 
-                                        v-model="pasien.no_rkm_medis" @keyup="cariPasien">
+                                        v-model="pasien.no_rkm_medis" @input="cariPasien">
                                     <div class="input-group-append">
                                         <button class="btn btn-sm btn-outline-secondary" type="button"
                                             @click="dp_visible = !dp_visible">...</button>
@@ -44,7 +44,7 @@ const Reg = {
                                 </div>
                                 <div class="col-md-4">
                                     <button class="btn btn-sm btn-outline-secondary" type="button"
-                                        @click="cekBpjs">Cek BPJS</button>
+                                        @click="cekBpjs" :disabled="!pasien.no_ktp">Cek BPJS</button>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -147,8 +147,17 @@ const Reg = {
                             <div class="form-group">
                                 <label>Jenis Pembayaran</label>
                                 <div>
-                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
-                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 25%;"
+                                        v-model="reg.kd_pj">
+                                    <select class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 70%;"
+                                        v-model="reg.kd_pj">
+                                        <option v-for="cb in cara_bayars" :key="cb.kd_pj"
+                                            :value="cb.kd_pj">
+                                            {{ cb.png_jawab }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -161,21 +170,39 @@ const Reg = {
                             <div class="form-group">
                                 <label>Ruang Poliklinik</label>
                                 <div>
-                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
-                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 25%;"
+                                        v-model="reg.kd_poli">
+                                    <select class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 70%;"
+                                        v-model="reg.kd_poli">
+                                        <option v-for="pk in polikliniks" :key="pk.kd_poli"
+                                            :value="pk.kd_poli">
+                                            {{ pk.nm_poli }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Dokter Periksa</label>
                                 <div>
-                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
-                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 25%;"
+                                        v-model="reg.kd_dokter">
+                                    <select class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 70%;"
+                                        v-model="reg.kd_dokter">
+                                        <option v-for="dk in dokters" :key="dk.kd_dokter" 
+                                            :value="dk.kd_dokter">
+                                            {{ dk.nm_dokter }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-sm btn-primary float-right">Simpan</button>
                                 <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
-                                <button type="button" class="btn btn-sm btn-secondary">Kosongkan</button>
+                                <button type="button" class="btn btn-sm btn-secondary" @click="pasien = {}">Kosongkan</button>
                             </div>
                             <hr>
                             <div class="alert alert-info" role="alert" v-show="Object.keys(info_bpjs).length > 0">
@@ -241,7 +268,8 @@ const Reg = {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="pasien in pasiens" :key="pasien.no_reg">
+                                <tr v-for="(pasien, idx) in pasiens" :key="pasien.no_reg"
+                                    @click="row_select = idx" :class="{selected: row_select === idx}">
                                     <td>
                                         <popper
                                             trigger="clickToOpen"
@@ -296,6 +324,10 @@ const Reg = {
                 tgl_reg: '',
                 jam_reg: ''
             },
+            cara_bayars: [],
+            polikliniks: [],
+            dokters: [],
+            row_select: null,
             visible: true,
             di_visible: false,
             dp_visible: false
@@ -305,7 +337,10 @@ const Reg = {
         this.setWindowTitle()
         this.getList()
         this.defaultTgl()
-        setInterval(()=>{this.defaultJam()}, 1000)
+        setInterval(() => { this.defaultJam() }, 1000)
+        this.getListCaraBayar()
+        this.getListPoliklinik()
+        this.getListDokter()
     },
     methods: {
         defaultTgl: function () {
@@ -314,6 +349,7 @@ const Reg = {
         defaultJam: function () {
             this.reg.jam_reg = moment().format('HH:mm:ss')
         },
+        //#region Olah Data Pasien
         getList: function () {
             const tglHariIni = moment().format('YYYY-MM-DD')
             const db = new dbUtil()
@@ -338,13 +374,13 @@ const Reg = {
                     AND tgl_registrasi = '${tglHariIni}'
                 ORDER BY
                     aa.tgl_registrasi, aa.jam_reg DESC`)
-            .then(res => {
-                this.pasiens = res
-                return db.closeDb()
-            }, err => {
-                return db.closeDb().then(() => { throw err })
-            })
-            .catch(err => console.error(err))
+                .then(res => {
+                    this.pasiens = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
         },
         getData: function (noRm) {
             const tglHariIni = moment().format('YYYY-MM-DD')
@@ -374,14 +410,14 @@ const Reg = {
                     aa.kd_kab = dd.kd_kab
                 WHERE
                     no_rkm_medis = '${noRm}'`)
-            .then(res => {
-                this.pasien = res[0]
-                this.pasien.no_rkm_medis = noRm
-                return db.closeDb()
-            }, err => {
-                return db.closeDb().then(() => { throw err })
-            })
-            .catch(err => console.error(err))
+                .then(res => {
+                    this.pasien = res[0]
+                    this.pasien.no_rkm_medis = noRm
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
         },
         cariPasien: function () {
             if (this.pasien.no_rkm_medis.length >= 6) {
@@ -399,27 +435,78 @@ const Reg = {
             const signature = enc_base64.stringify(hmac_sha256(salt, secret))
 
             axios.get(`${url}/Peserta/nik/${this.pasien.nik}/tglSEP/${moment().format('YYYY-MM-DD')}`,
-                { 
+                {
                     'headers': {
                         'X-cons-id': id,
                         'X-timestamp': timestamp,
                         'X-signature': signature
-                    } 
+                    }
                 })
-            .then(res => {
-                const peserta = res.data.response.peserta
-                this.info_bpjs = {
-                    status: peserta.statusPeserta.keterangan,
-                    nama: peserta.nama,
-                    no_bpjs: peserta.noKartu,
-                    jenis: peserta.jenisPeserta.keterangan,
-                    kelas: peserta.hakKelas.keterangan
-                }
-            })
-            .catch(err => alert(err))
+                .then(res => {
+                    if (!res.data.response) {
+                        alert(res.data.metaData.message)
+                    } else {
+                        const peserta = res.data.response.peserta
+                        this.info_bpjs = {
+                            status: peserta.statusPeserta.keterangan,
+                            nama: peserta.nama,
+                            no_bpjs: peserta.noKartu,
+                            jenis: peserta.jenisPeserta.keterangan,
+                            kelas: peserta.hakKelas.keterangan
+                        }
+                    }
+                })
+                .catch(err => alert(err))
+        },
+        //#endregion Olah Data Pasien
+        getListCaraBayar: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_pj, png_jawab
+                FROM
+                    penjab`)
+                .then(res => {
+                    this.cara_bayars = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListPoliklinik: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_poli, nm_poli
+                FROM
+                    poliklinik
+                WHERE
+                    status = '1'`)
+                .then(res => {
+                    this.polikliniks = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListDokter: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_dokter, nm_dokter
+                FROM
+                    dokter
+                WHERE
+                    status = '1'`)
+                .then(res => {
+                    this.dokters = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
         },
         setWindowTitle: function () {
-            const name =  require('./package.json').name
+            const name = require('./package.json').name
             remote.getCurrentWindow().setTitle(`${name} | Registrasi Rawat Jalan`)
         }
     }

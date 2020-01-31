@@ -43,8 +43,9 @@ const CariPasienD = {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="pasien in pasiens" :key="pasien.no_rkm_medis" 
-                                        @dblclick="selectPx(pasien.no_rkm_medis)">
+                                    <tr v-for="(pasien, idx) in pasiens" :key="pasien.no_rkm_medis" 
+                                        @click="row_select = idx" @dblclick="selectPx(pasien.no_rkm_medis)" 
+                                        :class="{selected: row_select === idx}">
                                         <td>
                                             <a href="#" @click="selectPx(pasien.no_rkm_medis)">
                                                 {{pasien.no_rkm_medis}}
@@ -67,7 +68,8 @@ const CariPasienD = {
         return {
             nama: '',
             alamat: '',
-            pasiens: []
+            pasiens: [],
+            row_select: null
         }
     },
     created: function () {
@@ -80,17 +82,14 @@ const CariPasienD = {
                     no_rkm_medis, nm_pasien, jk, tgl_lahir, alamat
                 FROM
                     pasien
-                ${this.nama || this.alamat ? 'WHERE ' : ''}
-                    ${this.nama ? 'nm_pasien LIKE "%' + this.nama + '%" ' : ''}
-                    ${this.alamat 
-                        ? this.nama 
-                            ? 'AND alamat LIKE "%' + this.alamat + '%" ' 
-                            : 'alamat LIKE "%' + this.alamat + '%" '
-                        : ''}
+                WHERE
+                    nm_pasien LIKE '%${this.nama ? this.nama : '' }%'
+                    AND alamat LIKE '%${this.alamat ? this.alamat :  ''}%'
                 ORDER BY
                     tgl_daftar DESC
                 LIMIT 10`)
             .then(res => {
+                this.row_select = null
                 this.pasiens = res
                 return db.closeDb()
             }, err => {
