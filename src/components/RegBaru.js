@@ -1,5 +1,7 @@
 const remote = require('electron').remote
 
+import { dbUtil } from '../dbconn.js'
+
 const RegBaru = {
     template: `
         <div class="container-fluid">
@@ -97,25 +99,42 @@ const RegBaru = {
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Suku Bangsa</label>
-                                    <select class="form-control form-control-sm"></select>
+                                    <select class="form-control form-control-sm">
+                                        <option v-for="sk in sukus" :key="sk.id" :value="sk.id">
+                                            {{ sk.nama_suku_bangsa }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Bahasa</label>
-                                    <select class="form-control form-control-sm"></select>
+                                    <select class="form-control form-control-sm">
+                                        <option v-for="bhs in bahasas" :key="bhs.id" :value="bhs.id">
+                                            {{ bhs.nama_bahasa }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Cacat Fisik</label>
-                            <select class="form-control form-control-sm"></select>
+                            <select class="form-control form-control-sm">
+                                <option v-for="cc in cacats" :key="cc.id" :value="cc.id">
+                                    {{ cc.nama_cacat }}
+                                </option>
+                            </select>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Instansi Pasien</label>
-                                    <select class="form-control form-control-sm"></select>
+                                    <select class="form-control form-control-sm">
+                                        <option v-for="ps in perusahaans" :key="ps.kode_perusahaan" 
+                                            :value="ps.kode_perusahaan">
+                                            {{ ps.nama_perusahaan }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -134,13 +153,26 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Agama</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option value="ISLAM">ISLAM</option>
+                                            <option value="KRISTEN">KRISTEN</option>
+                                            <option value="KATOLIK">KATOLIK</option>
+                                            <option value="HINDU">HINDU</option>
+                                            <option value="BUDHA">BUDHA</option>
+                                            <option value="KONG HU CHU">KONG HU CHU</option>
+                                            <option value="-">-</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Status Nikah</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="(sn, index) in st_nikahs" :key="index" 
+                                                :value="sn">
+                                                {{ sn }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -148,7 +180,12 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Pendidikan</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="(pd, index) in pendidikans" :key="index" 
+                                                :value="pd">
+                                                {{ pd }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -176,7 +213,12 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Jenis Asuransi</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="as in asuransis" :key="as.kd_pj" 
+                                                :value="as.kd_pj">
+                                                {{ as.png_jawab }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -293,9 +335,206 @@ const RegBaru = {
             </div>
         </div>
     `,
+    data: function () {
+        return {
+            sukus: [],
+            bahasas: [],
+            cacats: [],
+            st_nikahs: [],
+            pendidikans: [],
+            asuransis: [],
+            perusahaans: [],
+            kelurahans: [],
+            kecamatans: [],
+            kabupatens: [],
+            propinsis: []
+        }
+    },
     mounted: function () {
-        const name =  require('./package.json').name
-        remote.getCurrentWindow().setTitle(`${name} | Registrasi Pasien Baru`)
+        this.setWindowTitle()
+        this.getListSuku()
+        this.getListBahasa()
+        this.getListCacat()
+        this.getListStnikah()
+        this.getListPendidikan()
+        this.getListAsuransi()
+        this.getListPerusahaan()
+        this.getListKelurahan()
+        this.getListKecamatan()
+        this.getListKabupaten()
+        this.getListPropinsi()
+    },
+    methods: {
+        getListSuku: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    id, nama_suku_bangsa
+                FROM
+                    suku_bangsa`)
+                .then(res => {
+                    this.sukus = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListBahasa: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    id, nama_bahasa
+                FROM
+                    bahasa_pasien`)
+                .then(res => {
+                    this.bahasas = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListCacat: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    id, nama_cacat
+                FROM
+                    cacat_fisik`)
+                .then(res => {
+                    this.cacats = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListPerusahaan: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kode_perusahaan, nama_perusahaan
+                FROM
+                    perusahaan_pasien`)
+                .then(res => {
+                    this.perusahaans = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListStnikah: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT 
+                    COLUMN_TYPE
+                FROM 
+                    information_schema.\`COLUMNS\`
+                WHERE 
+                    TABLE_NAME = 'pasien'
+                    AND COLUMN_NAME = 'stts_nikah'
+                    LIMIT 1 `)
+                .then(res => {
+                    this.st_nikahs = res[0].COLUMN_TYPE
+                        .split(',').map(item => { return item.split("'") })
+                        .map(item => { return item[1] })
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListPendidikan: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT 
+                    COLUMN_TYPE
+                FROM 
+                    information_schema.\`COLUMNS\`
+                WHERE 
+                    TABLE_NAME = 'pasien'
+                    AND COLUMN_NAME = 'pnd'
+                    LIMIT 1 `)
+                .then(res => {
+                    this.pendidikans = res[0].COLUMN_TYPE
+                        .split(',').map(item => { return item.split("'") })
+                        .map(item => { return item[1] })
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListAsuransi: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_pj, png_jawab
+                FROM
+                    penjab`)
+                .then(res => {
+                    this.asuransis = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListKelurahan: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_kel, nm_kel
+                FROM
+                    kelurahan`)
+                .then(res => {
+                    this.kelurahans = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListKecamatan: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_kec, nm_kec
+                FROM
+                    kecamatan`)
+                .then(res => {
+                    this.kecamatans = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListKabupaten: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_kab, nm_kab
+                FROM
+                    kabupaten`)
+                .then(res => {
+                    this.kabupatens = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListPropinsi: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                    kd_prop, nm_prop
+                FROM
+                    propinsi`)
+                .then(res => {
+                    this.propinsis = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        setWindowTitle: function () {
+            const name =  require('./package.json').name
+            remote.getCurrentWindow().setTitle(`${name} | Registrasi Pasien Baru`)
+        }
     }
 
 }
