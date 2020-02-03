@@ -110,12 +110,12 @@ const Reg = {
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Keluarga</label>
+                                <label>Penanggung Jawab</label>
                                 <input type="text" class="form-control form-control-sm" 
                                     :value="pasien.keluarga" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Nama Keluarga</label>
+                                <label>Nama Penanggung Jawab</label>
                                 <input type="text" class="form-control form-control-sm" 
                                     :value="pasien.namakeluarga" readonly>
                             </div>

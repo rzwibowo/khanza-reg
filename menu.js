@@ -1,4 +1,7 @@
-const { app } = require('electron')
+const { app, dialog } = require('electron')
+const shell = require('electron').shell
+const name = require('./package.json').name
+const version = require('./package.json').version
 
 const menu_ = [
     {
@@ -34,11 +37,39 @@ const menu_ = [
         ]
     },
     {
-        label: 'Tentang',
-        click(menuItem, browserWindow, event) {
-            browserWindow.loadURL(`file://${__dirname}/index.html#/about`)
-        }
+        label: 'Info Aplikasi',
+        submenu: [
+            {
+                label: 'Developer',
+                click() {
+                    shell.openExternal('https://twitter.com/rzwibowo')
+                }
+            },
+            {
+                label: 'SIMRS Khanza',
+                click() {
+                    shell.openExternal('https://github.com/mas-elkhanza/SIMRS-Khanza')
+                }
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Tentang Aplikasi',
+                click() { dialog.showMessageBox(null, options) }
+            }
+        ]
     }
 ]
+
+const options = {
+    type: 'info',
+    title: 'Tentang khanza-reg',
+    message: `${name} version ${version}`,
+    detail: `Made with ❤ by Wibowo Dev
+In collaboration with Unit SIMRS RSI Wonosobo
+Based on SIMRS Khanza
+© 2019 - ${(new Date()).getFullYear()}`
+}
 
 exports.menu = menu_

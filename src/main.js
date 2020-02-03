@@ -1,6 +1,5 @@
 import Vue from './vendor/vue/vue.esm.browser.min.js'
 
-import { AboutT } from './components/AboutComp.js'
 import { MainT } from './components/template/MainT.js'
 import { Reg } from './components/Reg.js'
 import { RegBaru } from './components/RegBaru.js'
@@ -16,10 +15,6 @@ const router = new VueRouter({
         {
             path: '/regbaru',
             component: RegBaru
-        },
-        {
-            path: '/about',
-            component: AboutT
         }
     ]
 });

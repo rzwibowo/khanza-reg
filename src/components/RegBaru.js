@@ -250,13 +250,23 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kelurahan</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="kl in kelurahans" :key="kl.kd_kel" 
+                                                :value="kl.kd_kel">
+                                                {{ kl.nm_kel }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kecamatan</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="kc in kecamatans" :key="kc.kd_kec" 
+                                                :value="kc.kd_kec">
+                                                {{ kc.nm_kec }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -264,13 +274,23 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kabupaten</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="kb in kabupatens" :key="kb.kd_kab" 
+                                                :value="kb.kd_kab">
+                                                {{ kb.nm_kab }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Provinsi</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="pp in propinsis" :key="pp.kd_prop" 
+                                                :value="pp.kd_prop">
+                                                {{ pp.nm_prop }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -282,7 +302,12 @@ const RegBaru = {
                         <div class="card-body px-1">
                             <div class="form-group">
                                 <label>Penanggung Jawab</label>
-                                <select class="form-control form-control-sm"></select>
+                                <select class="form-control form-control-sm">
+                                    <option v-for="(kl, index) in keluargas" :key="index" 
+                                        :value="kl">
+                                        {{ kl }}
+                                    </option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Nama Penanggung Jawab</label>
@@ -300,13 +325,23 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kelurahan</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="kl in kelurahans" :key="kl.kd_kel" 
+                                                :value="kl.kd_kel">
+                                                {{ kl.nm_kel }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kecamatan</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="kc in kecamatans" :key="kc.kd_kec" 
+                                                :value="kc.kd_kec">
+                                                {{ kc.nm_kec }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -314,13 +349,23 @@ const RegBaru = {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Kabupaten</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="kb in kabupatens" :key="kb.kd_kab" 
+                                                :value="kb.kd_kab">
+                                                {{ kb.nm_kab }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Provinsi</label>
-                                        <select class="form-control form-control-sm"></select>
+                                        <select class="form-control form-control-sm">
+                                            <option v-for="pp in propinsis" :key="pp.kd_prop" 
+                                                :value="pp.kd_prop">
+                                                {{ pp.nm_prop }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -347,7 +392,8 @@ const RegBaru = {
             kelurahans: [],
             kecamatans: [],
             kabupatens: [],
-            propinsis: []
+            propinsis: [],
+            keluargas: []
         }
     },
     mounted: function () {
@@ -363,6 +409,7 @@ const RegBaru = {
         this.getListKecamatan()
         this.getListKabupaten()
         this.getListPropinsi()
+        this.getListKeluarga()
     },
     methods: {
         getListSuku: function () {
@@ -525,6 +572,26 @@ const RegBaru = {
                     propinsi`)
                 .then(res => {
                     this.propinsis = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        getListKeluarga: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT 
+                    COLUMN_TYPE
+                FROM 
+                    information_schema.\`COLUMNS\`
+                WHERE 
+                    TABLE_NAME = 'pasien'
+                    AND COLUMN_NAME = 'keluarga'
+                    LIMIT 1 `)
+                .then(res => {
+                    this.keluargas = res[0].COLUMN_TYPE
+                        .split(',').map(item => { return item.split("'") })
+                        .map(item => { return item[1] })
                     return db.closeDb()
                 }, err => {
                     return db.closeDb().then(() => { throw err })
