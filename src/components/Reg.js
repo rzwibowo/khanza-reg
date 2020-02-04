@@ -119,8 +119,10 @@ const Reg = {
                                 <input type="text" class="form-control form-control-sm" 
                                     :value="pasien.namakeluarga" readonly>
                             </div>
+                            <!-- dalam perencanaan --
                             <button type="button" class="btn btn-sm btn-secondary">Cetak Kartu</button>
                             <button type="button" class="btn btn-sm btn-secondary">Cetak Form</button>
+                            -->
                         </div>
                     </div>
                 </div>
@@ -163,8 +165,18 @@ const Reg = {
                             <div class="form-group">
                                 <label>Asal Rujukan</label>
                                 <div>
-                                    <input type="text" class="form-control form-control-sm" style="display: inline-block; width: 25%;">
-                                    <select class="form-control form-control-sm" style="display: inline-block; width: 70%;"></select>
+                                    <input type="text" class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 25%;"
+                                        v-model="reg.perujuk">
+                                    <select class="form-control form-control-sm" 
+                                        style="display: inline-block; width: 70%;"
+                                        v-model="reg.perujuk">
+                                        <option value="-">-</option>
+                                        <option v-for="(rj, index) in rujukans" :key="index"
+                                            :value="rj.perujuk">
+                                            {{ rj.perujuk }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -202,7 +214,10 @@ const Reg = {
                             <div>
                                 <button type="button" class="btn btn-sm btn-primary float-right">Simpan</button>
                                 <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
-                                <button type="button" class="btn btn-sm btn-secondary" @click="pasien = {}">Kosongkan</button>
+                                <button type="button" class="btn btn-sm btn-secondary" 
+                                    @click="kosongkan">
+                                    Kosongkan
+                                </button>
                             </div>
                             <hr>
                             <div class="alert alert-info" role="alert" v-show="Object.keys(info_bpjs).length > 0">
@@ -327,6 +342,7 @@ const Reg = {
             cara_bayars: [],
             polikliniks: [],
             dokters: [],
+            rujukans: [],
             row_select: null,
             visible: true,
             di_visible: false,
@@ -341,6 +357,7 @@ const Reg = {
         this.getListCaraBayar()
         this.getListPoliklinik()
         this.getListDokter()
+        this.getListRujukan()
     },
     methods: {
         defaultTgl: function () {
@@ -504,6 +521,30 @@ const Reg = {
                     return db.closeDb().then(() => { throw err })
                 })
                 .catch(err => console.error(err))
+        },
+        getListRujukan: function () {
+            const db = new dbUtil()
+            db.doQuery(`SELECT
+                        perujuk
+                    FROM
+                        rujuk_masuk
+                    GROUP BY
+                        perujuk`)
+                .then(res => {
+                    this.rujukans = res
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
+        kosongkan: function () {
+            this.pasien = {}
+            this.reg = {
+                tgl_reg: '',
+                jam_reg: '' 
+            }
+            this.defaultTgl()
         },
         setWindowTitle: function () {
             const name = require('./package.json').name

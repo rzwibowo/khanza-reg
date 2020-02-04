@@ -372,7 +372,8 @@ const RegBaru = {
                             <div>
                                 <button type="button" class="btn btn-sm btn-primary float-right">Simpan</button>
                                 <a class="btn btn-sm btn-secondary" href="#/">Kembali</a>
-                                <button type="button" class="btn btn-sm btn-secondary">Kosongkan</button>
+                                <button type="button" class="btn btn-sm btn-secondary" 
+                                    @click="reg = {}">Kosongkan</button>
                             </div>
                         </div>
                     </div>
@@ -382,6 +383,7 @@ const RegBaru = {
     `,
     data: function () {
         return {
+            reg: {},
             sukus: [],
             bahasas: [],
             cacats: [],
