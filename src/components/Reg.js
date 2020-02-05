@@ -22,7 +22,8 @@ const Reg = {
                                 <label>No. RM</label>
                                 <div class="input-group">
                                     <input type="search" class="form-control form-control-sm" 
-                                        v-model="pasien.no_rkm_medis" @input="cariPasien">
+                                        v-model="pasien.no_rkm_medis" @input="cariPasien"
+                                        :class="{is-invalid: validasi[0]}">
                                     <div class="input-group-append">
                                         <button class="btn btn-sm btn-outline-secondary" type="button"
                                             @click="dp_visible = !dp_visible">...</button>
@@ -131,11 +132,27 @@ const Reg = {
                         <div class="card-body px-1">
                             <h5 class="card-title">Entri Kunjungan</h5>
                             <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>No. Reg</label>
+                                        <input type="text" class="form-control form-control-sm" 
+                                            v-model="reg.no_reg" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label>No. Rawat</label>
+                                        <input type="text" class="form-control form-control-sm"
+                                            v-model="reg.no_rawat" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Tanggal</label>
                                         <input type="date" class="form-control form-control-sm" 
-                                            v-model="reg.tgl_registrasi">
+                                            v-model="reg.tgl_registrasi" @change="genNoReg();genNoRawat();">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -154,7 +171,7 @@ const Reg = {
                                         v-model="reg.kd_pj">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
-                                        v-model="reg.kd_pj">
+                                        v-model="reg.kd_pj" :class="{is-invalid: validasi[0]}">
                                         <option v-for="cb in cara_bayars" :key="cb.kd_pj"
                                             :value="cb.kd_pj">
                                             {{ cb.png_jawab }}
@@ -184,10 +201,10 @@ const Reg = {
                                 <div>
                                     <input type="text" class="form-control form-control-sm" 
                                         style="display: inline-block; width: 25%;"
-                                        v-model="reg.kd_poli">
+                                        v-model="reg.kd_poli" :class="{is-invalid: validasi[0]}">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
-                                        v-model="reg.kd_poli">
+                                        v-model="reg.kd_poli" @change="genNoReg();genNoRawat();">
                                         <option v-for="pk in polikliniks" :key="pk.kd_poli"
                                             :value="pk.kd_poli">
                                             {{ pk.nm_poli }}
@@ -203,7 +220,7 @@ const Reg = {
                                         v-model="reg.kd_dokter">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
-                                        v-model="reg.kd_dokter">
+                                        v-model="reg.kd_dokter" :class="{is-invalid: validasi[0]}">
                                         <option v-for="dk in dokters" :key="dk.kd_dokter" 
                                             :value="dk.kd_dokter">
                                             {{ dk.nm_dokter }}
@@ -336,7 +353,7 @@ const Reg = {
             pasiens: [],
             info_bpjs: {},
             reg: {
-                tgl_reg: '',
+                tgl_registrasi: '',
                 jam_reg: ''
             },
             cara_bayars: [],
@@ -346,7 +363,8 @@ const Reg = {
             row_select: null,
             visible: true,
             di_visible: false,
-            dp_visible: false
+            dp_visible: false,
+            validasi: [false, false, false, false] //utk no RM, cara bayar, ruang klinik, dokter
         }
     },
     mounted: function () {
@@ -354,6 +372,8 @@ const Reg = {
         this.getList()
         this.defaultTgl()
         setInterval(() => { this.defaultJam() }, 1000)
+        this.genNoReg()
+        this.genNoRawat()
         this.getListCaraBayar()
         this.getListPoliklinik()
         this.getListDokter()
@@ -476,6 +496,7 @@ const Reg = {
                 .catch(err => alert(err))
         },
         //#endregion Olah Data Pasien
+        //#region Data Combobox
         getListCaraBayar: function () {
             const db = new dbUtil()
             db.doQuery(`SELECT
@@ -538,13 +559,111 @@ const Reg = {
                 })
                 .catch(err => console.error(err))
         },
+        //#endregion Data Combobox
+        cekValid: function () {
+            const db = new dbUtil()
+            let inap = false
+
+            db.doQuery(`SELECT 
+                    COUNT(aa.no_rkm_medis) AS jumlah
+                FROM pasien aa
+                    LEFT JOIN reg_periksa bb 
+                    LEFT JOIN kamar_inap cc
+                        ON bb.no_rkm_medis = aa.no_rkm_medis
+                        AND bb.no_rawat = cc.no_rawat
+                WHERE ccp.stts_pulang='-' 
+                    AND aa.no_rkm_medis = ${this.pasien.no_rkm_medis}`)
+                .then(res => {
+                    res[0].jumlah > 0 ? inap = true : inap = false
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+
+            if (this.pasien.no_rkm_medis.length < 6) {
+                this.validasi[0] = true
+                alert("No. MR tidak boleh kosong atau kurang dari 6 karakter")
+            } else if (!this.reg.kd_pj) {
+                this.validasi[1] = true
+                alert("Jenis pembayaran tidak boleh kosong")
+            } else if (!this.reg.kd_poli) {
+                this.validasi[2] = true
+                alert("Ruang poliklinik tidak boleh kosong")
+            } else if (!this.reg.kd_dokter) {
+                this.validasi[3] = true
+                alert("Dokter tidak boleh kosong")
+            } else if (inap) {
+                alert("Pasien masih rawat inap")
+            } else {
+                this.validasi = [false, false, false, false]
+            }
+
+            //const valid = this.validasi.reduce
+        },
+        genNoReg: async function () {
+            const db = new dbUtil()
+            let max_no_booking = 0
+            let max_no_register = 0
+            await db.doQuery(`SELECT 
+                    IFNULL(MAX(CONVERT(no_reg,signed)),0) AS maxno
+                FROM 
+                    booking_registrasi 
+                WHERE 
+                    kd_poli='${this.reg.kd_poli ? this.reg.kd_poli : ''}' 
+                AND tanggal_periksa='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
+                .then(res => {
+                    max_no_booking = res[0].maxno
+
+                    return db.doQuery(`SELECT 
+                            IFNULL(MAX(CONVERT(no_reg,signed)),0) AS maxno
+                        FROM 
+                            reg_periksa 
+                        WHERE 
+                            kd_poli='${this.reg.kd_poli ? this.reg.kd_poli : ''}' 
+                        AND tgl_registrasi='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
+                })
+                .then(res => {
+                    max_no_register = res[0].maxno
+
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+           
+            if (max_no_booking >= max_no_register) {
+                this.reg.no_reg = (max_no_booking + 1).toString().padStart(3, '0')
+            } else {
+                this.reg.no_reg = (max_no_register + 1).toString().padStart(3, '0')
+            }
+        },
+        genNoRawat: function () {
+            const db = new dbUtil()
+            let max_no_rwt = 0
+            const tgl_reg_fmt = moment(this.reg.tgl_registrasi).format('YYYY/MM/DD')
+            db.doQuery(`SELECT 
+                    IFNULL(MAX(CONVERT(RIGHT(no_rawat,6),signed)),0) AS maxnorwt 
+                FROM 
+                    reg_periksa 
+                WHERE 
+                    tgl_registrasi='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
+                .then(res => {
+                    max_no_rwt = res[0].maxnorwt
+                    this.reg.no_rawat = `${tgl_reg_fmt}/${(max_no_rwt + 1).toString().padStart(6, '0')}`
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+        },
         kosongkan: function () {
             this.pasien = {}
             this.reg = {
-                tgl_reg: '',
+                tgl_registrasi: '',
                 jam_reg: '' 
             }
             this.defaultTgl()
+            this.genNoReg()
+            this.genNoRawat()
         },
         setWindowTitle: function () {
             const name = require('./package.json').name
