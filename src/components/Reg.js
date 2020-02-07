@@ -560,11 +560,11 @@ const Reg = {
                 .catch(err => console.error(err))
         },
         //#endregion Data Combobox
-        cekValid: function () {
+        cekValid: async function () {
             const db = new dbUtil()
             let inap = false
 
-            db.doQuery(`SELECT 
+            await db.doQuery(`SELECT 
                     COUNT(aa.no_rkm_medis) AS jumlah
                 FROM pasien aa
                     LEFT JOIN reg_periksa bb 
@@ -598,7 +598,11 @@ const Reg = {
                 this.validasi = [false, false, false, false]
             }
 
-            //const valid = this.validasi.reduce
+            const valid = this.validasi.reduce((final_res, item) => { 
+                return final_res || item 
+            })
+
+            return valid
         },
         genNoReg: async function () {
             const db = new dbUtil()
