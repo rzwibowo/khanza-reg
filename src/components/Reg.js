@@ -23,7 +23,7 @@ const Reg = {
                                 <div class="input-group">
                                     <input type="search" class="form-control form-control-sm" 
                                         v-model="pasien.no_rkm_medis" @input="cariPasien"
-                                        :class="{is-invalid: validasi[0]}">
+                                        :class="{'is-invalid': validasi[0]}">
                                     <div class="input-group-append">
                                         <button class="btn btn-sm btn-outline-secondary" type="button"
                                             @click="dp_visible = !dp_visible">...</button>
@@ -171,7 +171,7 @@ const Reg = {
                                         v-model="reg.kd_pj">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
-                                        v-model="reg.kd_pj" :class="{is-invalid: validasi[0]}">
+                                        v-model="reg.kd_pj" :class="{'is-invalid': validasi[0]}">
                                         <option v-for="cb in cara_bayars" :key="cb.kd_pj"
                                             :value="cb.kd_pj">
                                             {{ cb.png_jawab }}
@@ -201,7 +201,7 @@ const Reg = {
                                 <div>
                                     <input type="text" class="form-control form-control-sm" 
                                         style="display: inline-block; width: 25%;"
-                                        v-model="reg.kd_poli" :class="{is-invalid: validasi[0]}">
+                                        v-model="reg.kd_poli" :class="{'is-invalid': validasi[0]}">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
                                         v-model="reg.kd_poli" @change="genNoReg();genNoRawat();">
@@ -220,7 +220,7 @@ const Reg = {
                                         v-model="reg.kd_dokter">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
-                                        v-model="reg.kd_dokter" :class="{is-invalid: validasi[0]}">
+                                        v-model="reg.kd_dokter" :class="{'is-invalid': validasi[0]}">
                                         <option v-for="dk in dokters" :key="dk.kd_dokter" 
                                             :value="dk.kd_dokter">
                                             {{ dk.nm_dokter }}
@@ -424,7 +424,7 @@ const Reg = {
             const db = new dbUtil()
             db.doQuery(`SELECT
                     nm_pasien, no_ktp, CONCAT(alamat, ', ', bb.nm_kel) AS alamat_,
-                    cc.nm_kec, dd.nm_kab, namakeluarga, keluarga,
+                    cc.nm_kec, dd.nm_kab, namakeluarga, keluarga, alamatpj,
                     IF(tgl_daftar = '${tglHariIni}', 'Baru', 'Lama') AS status,
                     no_peserta, tgl_lahir, 
                     TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) AS tahun,
@@ -434,9 +434,7 @@ const Reg = {
                         DATE_ADD(tgl_lahir, INTERVAL TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) YEAR),
                         INTERVAL TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
                             - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) DIV 12) * 12) MONTH),
-                        CURDATE()) AS hari,
-                    keluarga,
-                    namakeluarga
+                        CURDATE()) AS hari
                 FROM
                     pasien aa
                 LEFT JOIN kelurahan bb ON
@@ -514,7 +512,7 @@ const Reg = {
         getListPoliklinik: function () {
             const db = new dbUtil()
             db.doQuery(`SELECT
-                    kd_poli, nm_poli
+                    kd_poli, nm_poli, registrasi, registrasilama
                 FROM
                     poliklinik
                 WHERE
@@ -571,7 +569,7 @@ const Reg = {
                     LEFT JOIN kamar_inap cc
                         ON bb.no_rkm_medis = aa.no_rkm_medis
                         AND bb.no_rawat = cc.no_rawat
-                WHERE ccp.stts_pulang='-' 
+                WHERE cc.stts_pulang='-' 
                     AND aa.no_rkm_medis = ${this.pasien.no_rkm_medis}`)
                 .then(res => {
                     res[0].jumlah > 0 ? inap = true : inap = false
@@ -603,6 +601,78 @@ const Reg = {
             })
 
             return valid
+        },
+        saveReg: async function () {
+            const valid = this.cekValid()
+            if (valid) {
+                const db = new dbUtil()
+
+                let status_poli = ''
+                await db.doQuery(`SELECT 
+                        COUNT(no_rkm_medis) AS jml_periksa_poli 
+                    FROM 
+                        reg_periksa 
+                    WHERE 
+                        no_rkm_medis = '${this.pasien.no_rkm_medis}'
+                        AND kd_poli = '${this.reg.kd_poli}'`)
+                    .then(res => {
+                        res[0].jml_periksa_poli > 0 ? status_poli = 'Lama' : status_poli = 'Baru'
+                    }, err => {
+                        return db.closeDb().then(() => { throw err })
+                    })
+                    .catch(err => console.error(err))
+
+                const biaya = this.pasien.status === 'Lama'
+                    ? this.polikliniks.filter(item => {
+                        return item.kd_poli === this.reg.kd_poli
+                    })[0].registrasilama
+                    : this.polikliniks.filter(item => {
+                        return item.kd_poli === this.reg.kd_poli
+                    })[0].registrasi
+
+                let umur = 0
+                let statusumur = 'Th'
+
+                if (this.pasien.tahun > 0) {
+                    umur = this.pasien.tahun
+                    statusumur = 'Th'
+                } else {
+                    if (this.pasien.bulan > 0) {
+                        umur = this.pasien.bulan
+                        statusumur = 'Bl'
+                    } else {
+                        umur = this.pasien.hari
+                        statusumur = 'Hr'
+                    }
+                }
+
+                db.doQuery(`INSERT INTO
+                        reg_periksa
+                        (no_reg, no_rawat, tgl_registrasi, jam_reg, kd_dokter, no_rkm_medis, kd_poli,
+                            p_jawab, almt_pj, hubunganpj, biaya_reg, stts, stts_daftar, status_lanjut,
+                            kd_pj, umurdaftar, sttsumur, status_bayar, status_poli)
+                    VALUES
+                        ('${this.reg.no_reg}', '${this.reg.no_rawat}', '${this.reg.tgl_registrasi}',
+                            '${this.reg.jam_reg}', '${this.reg.kd_dokter}', '${this.pasien.no_rkm_medis}',
+                            '${this.reg.kd_poli}', '${this.pasien.namakeluarga}', '${this.pasien.alamatpj}',
+                            '${this.pasien.keluarga}', ${biaya}, 'Belum', '${this.pasien.status}', 'Ralan',
+                            '${this.reg.kd_pj}', ${umur}, '${statusumur}', 'Belum Bayar', '${status_poli}')`)
+                    .then(() => {
+                        return db.doQuery(`UPDATE pasien
+                            SET umur = CONCAT(
+                                CONCAT(
+                                    CONCAT(TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()), ' Th '),
+                                    CONCAT(TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
+                                        - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12), ' Bl ')),
+                                    CONCAT(TIMESTAMPDIFF(DAY, DATE_ADD(
+                                        DATE_ADD(tgl_lahir,INTERVAL TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) YEAR), 
+                                        INTERVAL TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
+                                            - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12) MONTH), CURDATE()), ' Hr'))
+                            WHERE
+                                no_rkm_medis = ${this.pasien.no_rkm_medis}`)
+                    })
+                    .catch(err => console.error(err))
+            }
         },
         genNoReg: async function () {
             const db = new dbUtil()
