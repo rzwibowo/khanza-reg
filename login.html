@@ -24,8 +24,8 @@
                     <label for="pwd">Password:</label>
                     <input type="password" class="form-control" v-model="password">
                 </div>
-                <button class="btn btn-primary" id="btn-login" type="submit">Login</button>
-                <button class="btn btn-default float-right" id="btn-exit" type="button" @click="keluar">Keluar</button>
+                <button class="btn btn-primary float-right" id="btn-login" type="submit">Login</button>
+                <button class="btn btn-default" id="btn-exit" type="button" @click="keluar">Keluar</button>
             </form>
             <div v-if="notif" class="alert alert-danger" role="alert" style="margin-top: .5em">
                 {{notif}}

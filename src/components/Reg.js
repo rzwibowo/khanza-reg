@@ -229,7 +229,8 @@ const Reg = {
                                 </div>
                             </div>
                             <div>
-                                <button type="button" class="btn btn-sm btn-primary float-right">Simpan</button>
+                                <button type="button" class="btn btn-sm btn-primary float-right"
+                                    @click="saveReg">Simpan</button>
                                 <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
                                 <button type="button" class="btn btn-sm btn-secondary" 
                                     @click="kosongkan">
@@ -321,15 +322,15 @@ const Reg = {
                                     </td>
                                     <td>{{ pasien.no_reg }}</td>
                                     <td>{{ pasien.no_rkm_medis }}</td>
-                                    <td>{{ pasien.tgl_registrasi }}</td>
+                                    <td style="white-space: nowrap">{{ moment(pasien.tgl_registrasi).format('DD-MM-YYYY') }}</td>
                                     <td>{{ pasien.jam_reg }}</td>
-                                    <td>{{ pasien.nm_pasien }}</td>
+                                    <td style="white-space: nowrap">{{ pasien.nm_pasien }}</td>
                                     <td>{{ pasien.umur }}</td>
-                                    <td>{{ pasien.tgl_lahir }}</td>
+                                    <td style="white-space: nowrap">{{ moment(pasien.tgl_lahir).format('DD-MM-YYYY') }}</td>
                                     <td>{{ pasien.jk }}</td>
                                     <td>{{ pasien.alamat }}</td>
-                                    <td>{{ pasien.nm_dokter }}</td>
-                                    <td>{{ pasien.nm_poli }}</td>
+                                    <td style="white-space: nowrap">{{ pasien.nm_dokter }}</td>
+                                    <td style="white-space: nowrap">{{ pasien.nm_poli }}</td>
                                     <td>{{ pasien.stts_daftar }}</td>
                                 </tr>
                                 <tr>
@@ -364,7 +365,9 @@ const Reg = {
             visible: true,
             di_visible: false,
             dp_visible: false,
-            validasi: [false, false, false, false] //utk no RM, cara bayar, ruang klinik, dokter
+            validasi: [false, false, false, false] 
+                // utk no RM, cara bayar, ruang klinik, dokter
+                // jika semua true, tidak valid
         }
     },
     mounted: function () {
@@ -566,11 +569,11 @@ const Reg = {
                     COUNT(aa.no_rkm_medis) AS jumlah
                 FROM pasien aa
                     LEFT JOIN reg_periksa bb 
+                    ON bb.no_rkm_medis = aa.no_rkm_medis
                     LEFT JOIN kamar_inap cc
-                        ON bb.no_rkm_medis = aa.no_rkm_medis
-                        AND bb.no_rawat = cc.no_rawat
-                WHERE cc.stts_pulang='-' 
-                    AND aa.no_rkm_medis = ${this.pasien.no_rkm_medis}`)
+                    ON bb.no_rawat = cc.no_rawat
+                WHERE cc.stts_pulang = '-' 
+                    AND aa.no_rkm_medis = '${this.pasien.no_rkm_medis}'`)
                 .then(res => {
                     res[0].jumlah > 0 ? inap = true : inap = false
                 }, err => {
@@ -670,6 +673,15 @@ const Reg = {
                                             - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12) MONTH), CURDATE()), ' Hr'))
                             WHERE
                                 no_rkm_medis = ${this.pasien.no_rkm_medis}`)
+                    })
+                    .then(() => {
+                        alert("Berhasil Simpan Registrasi")
+                        this.kosongkan()
+                        this.getList()
+
+                        return db.closeDb()
+                    }, err => {
+                        return db.closeDb().then(() => { throw err })
                     })
                     .catch(err => console.error(err))
             }
