@@ -201,10 +201,11 @@ const Reg = {
                                 <div>
                                     <input type="text" class="form-control form-control-sm" 
                                         style="display: inline-block; width: 25%;"
-                                        v-model="reg.kd_poli" :class="{'is-invalid': validasi[0]}">
+                                        v-model="reg.kd_poli">
                                     <select class="form-control form-control-sm" 
                                         style="display: inline-block; width: 70%;"
-                                        v-model="reg.kd_poli" @change="genNoReg();genNoRawat();">
+                                        v-model="reg.kd_poli" @change="genNoReg();genNoRawat();"
+                                        :class="{'is-invalid': validasi[0]}">
                                         <option v-for="pk in polikliniks" :key="pk.kd_poli"
                                             :value="pk.kd_poli">
                                             {{ pk.nm_poli }}
@@ -276,7 +277,7 @@ const Reg = {
                         <div class="col-md-12">
                             <button type="button" class="btn btn-sm btn-secondary" 
                                 @click="visible = !visible">{{ visible ? '&lt;' : '&gt;' }} Tugel Form </button>
-                            <button type="button" class="btn btn-sm btn-secondary"> Refresh </button>
+                            <button type="button" class="btn btn-sm btn-secondary" @click="getList"> Refresh </button>
                             <button type="button" class="btn btn-sm btn-secondary" 
                                 @click="di_visible = !di_visible">Open </button>
                         </div>
@@ -350,12 +351,17 @@ const Reg = {
     },
     data: function () {
         return {
-            pasien: {},
+            pasien: {
+                no_rkm_medis: null
+            },
             pasiens: [],
             info_bpjs: {},
             reg: {
-                tgl_registrasi: '',
-                jam_reg: ''
+                tgl_registrasi: null,
+                jam_reg: null,
+                kd_pj: null,
+                kd_poli: null,
+                kd_dokter: null
             },
             cara_bayars: [],
             polikliniks: [],
@@ -581,7 +587,7 @@ const Reg = {
                 })
                 .catch(err => console.error(err))
 
-            if (this.pasien.no_rkm_medis.length < 6) {
+            if (!this.pasien.no_rkm_medis || this.pasien.no_rkm_medis.length < 6) {
                 this.validasi[0] = true
                 alert("No. MR tidak boleh kosong atau kurang dari 6 karakter")
             } else if (!this.reg.kd_pj) {
@@ -606,8 +612,10 @@ const Reg = {
             return valid
         },
         saveReg: async function () {
-            const valid = this.cekValid()
-            if (valid) {
+            let invalid
+            this.cekValid().then(res => invalid = res)
+
+            if (!invalid) {
                 const db = new dbUtil()
 
                 let status_poli = ''
@@ -742,10 +750,15 @@ const Reg = {
                 .catch(err => console.error(err))
         },
         kosongkan: function () {
-            this.pasien = {}
+            this.pasien = {
+                no_rkm_medis: null
+            }
             this.reg = {
-                tgl_registrasi: '',
-                jam_reg: '' 
+                tgl_registrasi: null,
+                jam_reg: null,
+                kd_pj: null,
+                kd_poli: null,
+                kd_dokter: null
             }
             this.defaultTgl()
             this.genNoReg()

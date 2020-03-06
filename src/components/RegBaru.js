@@ -415,10 +415,10 @@ const RegBaru = {
                             </div>
                             <div>
                                 <button type="button" class="btn btn-sm btn-primary float-right"
-                                    @click="cekValid">Simpan</button>
+                                    @click="saveReg">Simpan</button>
                                 <a class="btn btn-sm btn-secondary" href="#/">Kembali</a>
                                 <button type="button" class="btn btn-sm btn-secondary" 
-                                    @click="reg = {}">Kosongkan</button>
+                                    @click="kosongkan">Kosongkan</button>
                             </div>
                         </div>
                     </div>
@@ -528,6 +528,7 @@ const RegBaru = {
         defaultTgl: function () {
             this.reg.tgl_daftar = moment().format('YYYY-MM-DD')
         },
+        //#region Data Combobox
         getListSuku: function () {
             const db = new dbUtil()
             db.doQuery(`SELECT
@@ -714,16 +715,13 @@ const RegBaru = {
                 })
                 .catch(err => console.error(err))
         },
+        //#endregion Data Combobox
         cekValid: function () {
             this.invalid_input = []
             let valid = [true]
             for(let [key, val] of Object.entries(this.reg)) {
                 if (!val && key !== 'suku_bangsa'
                     && key !== 'no_peserta'
-                    && key !== 'bahasa_pasien'
-                    && key !== 'cacat_fisik'
-                    && key !== 'perusahaan_pasien'
-                    && key !== 'nip'
                     && key !== 'no_tlp') {
                     valid.push(false)
                     this.invalid_input.push(key)
@@ -740,7 +738,57 @@ const RegBaru = {
                 }).join(', ')
                 alert(`Harap isi data berikut dengan benar: ${inv}`)
             }
+
             return valid
+        },
+        saveReg: function () {
+            const valid = this.cekValid()
+            if (valid) {
+                const db = new dbUtil()
+
+                db.doQuery(`INSERT INTO
+                        pasien
+                        (no_rkm_medis, nm_pasien, no_ktp, jk, tmp_lahir,
+                            tgl_lahir, nm_ibu, alamat, kd_kel, kd_kec,
+                            kd_kab, kd_prop, gol_darah, pekerjaan, stts_nikah,
+                            agama, tgl_daftar, no_tlp, umur, pnd, keluarga,
+                            namakeluarga, kd_pj, no_peserta, pekerjaanpj,
+                            alamatpj, kelurahanpj, kecamatanpj, kabupatenpj,
+                            propinsipj, perusahaan_pasien, suku_bangsa, 
+                            bahasa_pasien, cacat_fisik, email, nip)
+                    VALUES
+                        ('${this.reg.no_rkm_medis}', '${this.reg.nm_pasien}', 
+                            '${this.reg.no_ktp}', '${this.reg.jk}', '${this.reg.tmp_lahir}',
+                            '${this.reg.tgl_lahir}', '${this.reg.nm_ibu}', '${this.reg.alamat}',
+                            ${this.reg.kd_kel}, ${this.reg.kd_kec}, ${this.reg.kd_kab},
+                            ${this.reg.kd_prop}, '${this.reg.gol_darah}', '${this.reg.pekerjaan}',
+                            '${this.reg.stts_nikah}', '${this.reg.agama}', '${this.reg.tgl_daftar}',
+                            '${this.reg.no_tlp}', '${this.reg.umur}', '${this.reg.pnd}',
+                            '${this.reg.keluarga}', '${this.reg.namakeluarga}', '${this.reg.kd_pj}',
+                            '${this.reg.no_peserta}', '${this.reg.pekerjaanpj}', '${this.reg.alamatpj}',
+                            '${this.reg.kelurahanpj}', '${this.reg.kecamatanpj}', '${this.reg.kabupatenpj}',
+                            '${this.reg.propinsipj}', '${this.reg.perusahaan_pasien}',
+                            ${this.reg.suku_bangsa}, ${this.reg.bahasa_pasien}, ${this.reg.cacat_fisik},
+                            '${this.reg.email}', '${this.reg.nip}')`)
+                    .then(() => {
+                        return db.doQuery(`DELETE
+                            FROM set_no_rkm_medis`)
+                    })
+                    .then(() => {
+                        return db.doQuery(`INSERT INTO
+                                set_no_rkm_medis
+                            VALUES('${this.reg.no_rkm_medis}')`)
+                    })
+                    .then(() => {
+                        alert("Berhasil simpan pasien baru")
+                        this.kosongkan()
+
+                        return db.closeDb()
+                    }, err => {
+                        return db.closeDb().then(() => { throw err })
+                    })
+                    .catch(err => console.error(err))
+            }
         },
         genNoRm: function () {
             const db = new dbUtil()
@@ -756,6 +804,11 @@ const RegBaru = {
                     return db.closeDb().then(() => { throw err })
                 })
                 .catch(err => console.error(err))
+        },
+        kosongkan: function () {
+            Object.keys(this.reg).forEach(index => this.reg[index] = null)
+            this.defaultTgl()
+            this.genNoRm()
         },
         setWindowTitle: function () {
             const name = require('./package.json').name
