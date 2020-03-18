@@ -3,8 +3,6 @@ const remote = require('electron').remote
 const hmac_sha256 = require('crypto-js/hmac-sha256')
 const enc_base64 = require('crypto-js/enc-base64')
 
-import '../vendor/vue-popper/vue-popper.min.js'
-
 import { RegInapD } from './RegInapD.js'
 import { CariPasienD } from './CariPasienD.js'
 
@@ -302,50 +300,49 @@ const Reg = {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(pasien, idx) in pasiens" :key="pasien.no_reg"
-                                    @click="row_select = idx" :class="{selected: row_select === idx}">
-                                    <td>
-                                        <popper
-                                            trigger="clickToOpen"
-                                            :options="{
-                                                placement: 'top',
-                                                modifiers: { offset: { offset: '0,10px' } }
-                                            }"
-                                            :visible-arrow="false">
-                                            <div class="popper">
-                                                <a class="dropdown-item" href="#">Register Rawat Inap</a>
-                                            </div>
-                                        
-                                            <button class="btn btn-secondary btn-sm" slot="reference">
-                                                ...
+                                <template v-for="(pasien, idx) in pasiens" :key="pasien.no_reg">
+                                    <tr @click="row_select = idx" :class="{selected: row_select === idx}">
+                                        <td>
+                                            <button class="btn btn-secondary btn-sm btn-action" 
+                                                @click="act_visible === idx ? act_visible = null : act_visible = idx">
+                                                <span v-show="act_visible !== idx">▼</span>
+                                                <span v-show="act_visible === idx">▲</span>
                                             </button>
-                                        </popper>
-                                    </td>
-                                    <td>{{ pasien.no_reg }}</td>
-                                    <td>{{ pasien.no_rkm_medis }}</td>
-                                    <td style="white-space: nowrap">{{ moment(pasien.tgl_registrasi).format('DD-MM-YYYY') }}</td>
-                                    <td>{{ pasien.jam_reg }}</td>
-                                    <td style="white-space: nowrap">{{ pasien.nm_pasien }}</td>
-                                    <td>{{ pasien.umur }}</td>
-                                    <td style="white-space: nowrap">{{ moment(pasien.tgl_lahir).format('DD-MM-YYYY') }}</td>
-                                    <td>{{ pasien.jk }}</td>
-                                    <td>{{ pasien.alamat }}</td>
-                                    <td style="white-space: nowrap">{{ pasien.nm_dokter }}</td>
-                                    <td style="white-space: nowrap">{{ pasien.nm_poli }}</td>
-                                    <td>{{ pasien.stts_daftar }}</td>
-                                </tr>
-                                <tr>
+                                        </td>
+                                        <td>{{ pasien.no_reg }}</td>
+                                        <td>{{ pasien.no_rkm_medis }}</td>
+                                        <td style="white-space: nowrap">{{ moment(pasien.tgl_registrasi).format('DD-MM-YYYY') }}</td>
+                                        <td>{{ pasien.jam_reg }}</td>
+                                        <td style="white-space: nowrap">{{ pasien.nm_pasien }}</td>
+                                        <td>{{ pasien.umur }}</td>
+                                        <td style="white-space: nowrap">{{ moment(pasien.tgl_lahir).format('DD-MM-YYYY') }}</td>
+                                        <td>{{ pasien.jk }}</td>
+                                        <td>{{ pasien.alamat }}</td>
+                                        <td style="white-space: nowrap">{{ pasien.nm_dokter }}</td>
+                                        <td style="white-space: nowrap">{{ pasien.nm_poli }}</td>
+                                        <td>{{ pasien.stts_daftar }}</td>
+                                    </tr>
+                                    <tr v-show="act_visible === idx">
+                                        <td colspan="13">
+                                            <button type="button" class="btn btn-link btn-sm" 
+                                                @click="inap(pasien.no_rkm_medis, pasien.no_rawat, pasien.nm_pasien)">
+                                                Register Rawat Inap
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <RegInapD v-show="di_visible" @close="di_visible = false"></RegInapD>
+            <RegInapD v-show="di_visible" @close="di_visible = false" 
+                :no-rm="selected_pasien.no_rm" :nama="selected_pasien.nama"
+                :no-rawat="selected_pasien.no_rawat"></RegInapD>
             <CariPasienD v-show="dp_visible" @close="dp_visible = false" @select-p="getData"></CariPasienD>
         </div>
     `,
     components: {
-        'popper': VuePopper,
         RegInapD,
         CariPasienD
     },
@@ -368,9 +365,11 @@ const Reg = {
             dokters: [],
             rujukans: [],
             row_select: null,
+            act_visible: null,
             visible: true,
             di_visible: false,
             dp_visible: false,
+            selected_pasien: {},
             validasi: [false, false, false, false] 
                 // utk no RM, cara bayar, ruang klinik, dokter
                 // jika semua true, tidak valid
@@ -400,7 +399,7 @@ const Reg = {
             const tglHariIni = moment().format('YYYY-MM-DD')
             const db = new dbUtil()
             db.doQuery(`SELECT
-                    aa.no_reg, aa.tgl_registrasi, aa.jam_reg,
+                    aa.no_reg, aa.tgl_registrasi, aa.jam_reg, no_rawat,
                     bb.nm_dokter, cc.no_rkm_medis, cc.nm_pasien, cc.jk,
                     cc.alamat, cc.tgl_lahir, 
                     CONCAT(aa.umurdaftar, ' ', aa.sttsumur) AS umur,
@@ -763,6 +762,14 @@ const Reg = {
             this.defaultTgl()
             this.genNoReg()
             this.genNoRawat()
+        },
+        inap: function (no_rm, no_rawat, nama) {
+            this.selected_pasien = {
+                no_rm: no_rm,
+                no_rawat: no_rawat,
+                nama: nama
+            }
+            this.di_visible = true
         },
         setWindowTitle: function () {
             const name = require('./package.json').name

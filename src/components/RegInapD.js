@@ -1,3 +1,5 @@
+import { dbUtil } from '../dbconn.js'
+
 const RegInapD = {
     template: `
         <div class="modal" tabindex="-1" role="dialog" id="modal1">
@@ -15,7 +17,8 @@ const RegInapD = {
                                 <div class="form-group">
                                     <label>No. Rawat</label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control form-control-sm">
+                                        <input type="text" class="form-control form-control-sm"
+                                            v-model="noRawat">
                                         <div class="input-group-append">
                                             <button class="btn btn-sm btn-outline-secondary" type="button">...</button>
                                         </div>
@@ -25,13 +28,15 @@ const RegInapD = {
                             <div class="col-md-2">
                                 <div class="form-group">
                                     <label>No. RM</label>
-                                    <input type="text" class="form-control form-control-sm" readonly>
+                                    <input type="text" class="form-control form-control-sm" 
+                                        :value="noRm" readonly>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Nama</label>
-                                    <input type="text" class="form-control form-control-sm" readonly>
+                                    <input type="text" class="form-control form-control-sm" 
+                                        :value="nama" readonly>
                                 </div>
                             </div>
                         </div>
@@ -124,7 +129,8 @@ const RegInapD = {
                 </div>
             </div>
         </div>
-    `
+    `,
+    props: ['noRm', 'nama', 'noRawat']
 }
 
 export { RegInapD }
