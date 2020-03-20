@@ -75,13 +75,15 @@ const RegInapD = {
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Tanggal</label>
-                                    <input type="date" class="form-control form-control-sm">
+                                    <input type="date" class="form-control form-control-sm"
+                                        v-model="tgl_masuk">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Jam</label>
-                                    <input type="time" step="1" class="form-control form-control-sm">
+                                    <input type="time" step="1" class="form-control form-control-sm"
+                                        v-model="jam_masuk">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -130,7 +132,30 @@ const RegInapD = {
             </div>
         </div>
     `,
-    props: ['noRm', 'nama', 'noRawat']
+    props: ['noRm', 'nama', 'noRawat'],
+    data: function () {
+        return {
+            kd_kamar: null,
+            tgl_masuk: null,
+            jam_masuk: null,
+            diagnosa_awal: null,
+            lama: null,
+            trf_kamar: null,
+            ttl_biaya: null
+        }
+    },
+    mounted: function () {
+        this.defaultTgl()
+        this.defaultJam()
+    },
+    methods: {
+        defaultTgl: function () {
+            this.tgl_masuk = moment().format('YYYY-MM-DD')
+        },
+        defaultJam: function () {
+            this.jam_masuk = moment().format('HH:mm:ss')
+        }
+    }
 }
 
 export { RegInapD }

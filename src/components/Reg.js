@@ -229,7 +229,11 @@ const Reg = {
                             </div>
                             <div>
                                 <button type="button" class="btn btn-sm btn-primary float-right"
-                                    @click="saveReg">Simpan</button>
+                                    @click="saveReg" :disabled="is_loading">
+                                    <span class="spinner-border spinner-border-sm" 
+                                        role="status" aria-hidden="true" v-if="is_loading"></span>
+                                    <span v-else>Simpan</span>
+                                </button>
                                 <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
                                 <button type="button" class="btn btn-sm btn-secondary" 
                                     @click="kosongkan">
@@ -272,15 +276,45 @@ const Reg = {
                 </div>
                 <div :class="{'col-md-6': visible, 'col-md-12': !visible}">
                     <div class="row">
-                        <div class="col-md-12">
+                        <div :class="{'col-md-4': visible, 'col-md-2': !visible}">
                             <button type="button" class="btn btn-sm btn-secondary" 
-                                @click="visible = !visible">{{ visible ? '&lt;' : '&gt;' }} Tugel Form </button>
+                                @click="visible = !visible"
+                                :title="visible ? 'Sembunyikan form' : 'Tampilkan form'">
+                                {{ visible ? '◄' : '►' }}
+                            </button>
                             <button type="button" class="btn btn-sm btn-secondary" @click="getList"> Refresh </button>
-                            <button type="button" class="btn btn-sm btn-secondary" 
-                                @click="di_visible = !di_visible">Open </button>
+                        </div>
+                        <div :class="{'col-md-4': visible, 'col-md-2': !visible}">
+                            <input type="date" class="form-control form-control-sm" 
+                                v-model="tgl_awal" @change="getList">
+                        </div>
+                        <div :class="{'col-md-4': visible, 'col-md-2': !visible}">
+                            <input type="date" class="form-control form-control-sm"
+                                v-model="tgl_akhir" @change="getList">
+                        </div>
+                        <div :class="{'col-md-6': visible, 'col-md-2': !visible}">
+                            <select class="form-control form-control-sm" 
+                                v-model="klinik_cari" @change="filterPasien">
+                                <option value="-">SEMUA</option>
+                                <option v-for="pk in polikliniks" :key="pk.kd_poli"
+                                    :value="pk.kd_poli">
+                                    {{ pk.nm_poli }}
+                                </option>
+                            </select>
+                        </div>
+                        <div :class="{'col-md-6': visible, 'col-md-4': !visible}">
+                            <div class="input-group">
+                                <input type="search" class="form-control form-control-sm" 
+                                    placeholder="Cari ..." v-model="cari" 
+                                    @keyup.enter="filterPasien">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-sm" 
+                                        type="button" @click="filterPasien">&#x1F50D;</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="table-responsive" style="height: 90vh;">
+                    <div class="table-responsive" :class="{'h85vh': visible, 'h90vh': !visible}">
                         <table class="table table-sm table-hover table-bordered table-striped">
                             <thead>
                                 <tr>
@@ -300,7 +334,7 @@ const Reg = {
                                 </tr>
                             </thead>
                             <tbody>
-                                <template v-for="(pasien, idx) in pasiens" :key="pasien.no_reg">
+                                <template v-for="(pasien, idx) in pasiens_f" :key="pasien.no_reg">
                                     <tr @click="row_select = idx" :class="{selected: row_select === idx}">
                                         <td>
                                             <button class="btn btn-secondary btn-sm btn-action" 
@@ -334,6 +368,7 @@ const Reg = {
                             </tbody>
                         </table>
                     </div>
+                    <label>Total Pasien: {{pasiens_f.length}}</label>
                 </div>
             </div>
             <RegInapD v-show="di_visible" @close="di_visible = false" 
@@ -348,10 +383,15 @@ const Reg = {
     },
     data: function () {
         return {
+            tgl_awal: '',
+            tgl_akhir: '',
+            klinik_cari: '-',
+            cari: '',
             pasien: {
                 no_rkm_medis: null
             },
             pasiens: [],
+            pasiens_f: [],
             info_bpjs: {},
             reg: {
                 tgl_registrasi: null,
@@ -370,6 +410,7 @@ const Reg = {
             di_visible: false,
             dp_visible: false,
             selected_pasien: {},
+            is_loading: false,
             validasi: [false, false, false, false] 
                 // utk no RM, cara bayar, ruang klinik, dokter
                 // jika semua true, tidak valid
@@ -377,8 +418,9 @@ const Reg = {
     },
     mounted: function () {
         this.setWindowTitle()
-        this.getList()
         this.defaultTgl()
+        this.defaultTglList()
+        this.getList()
         setInterval(() => { this.defaultJam() }, 1000)
         this.genNoReg()
         this.genNoRawat()
@@ -388,6 +430,9 @@ const Reg = {
         this.getListRujukan()
     },
     methods: {
+        defaultTglList: function () {
+            this.tgl_awal = this.tgl_akhir = moment().format('YYYY-MM-DD')
+        },
         defaultTgl: function () {
             this.reg.tgl_registrasi = moment().format('YYYY-MM-DD')
         },
@@ -396,14 +441,13 @@ const Reg = {
         },
         //#region Olah Data Pasien
         getList: function () {
-            const tglHariIni = moment().format('YYYY-MM-DD')
             const db = new dbUtil()
             db.doQuery(`SELECT
                     aa.no_reg, aa.tgl_registrasi, aa.jam_reg, no_rawat,
                     bb.nm_dokter, cc.no_rkm_medis, cc.nm_pasien, cc.jk,
                     cc.alamat, cc.tgl_lahir, 
                     CONCAT(aa.umurdaftar, ' ', aa.sttsumur) AS umur,
-                    dd.nm_poli, aa.stts_daftar
+                    aa.kd_poli, dd.nm_poli, aa.stts_daftar
                 FROM
                     reg_periksa aa
                 LEFT JOIN dokter bb ON
@@ -416,16 +460,30 @@ const Reg = {
                     aa.kd_pj = ee.kd_pj
                 WHERE
                     dd.kd_poli <> 'IGDK'
-                    AND tgl_registrasi = '${tglHariIni}'
+                    AND tgl_registrasi BETWEEN '${this.tgl_awal}' AND '${this.tgl_akhir}'
                 ORDER BY
                     aa.tgl_registrasi, aa.jam_reg DESC`)
                 .then(res => {
                     this.pasiens = res
+                    this.klinik_cari = '-'
+                    this.cari = ''
+                    this.filterPasien()
                     return db.closeDb()
                 }, err => {
                     return db.closeDb().then(() => { throw err })
                 })
                 .catch(err => console.error(err))
+        },
+        filterPasien: function () {
+            this.pasiens_f = this.pasiens
+            if (this.klinik_cari !== '-') {
+                this.pasiens_f = this.pasiens_f.filter(item => { return item.kd_poli === this.klinik_cari })
+            }
+            if (this.cari) {
+                this.pasiens_f = this.pasiens_f.filter(item => { 
+                    return item.nm_pasien.trim().toLowerCase().includes(this.cari.trim().toLowerCase()) 
+                })
+            }
         },
         getData: function (noRm) {
             const tglHariIni = moment().format('YYYY-MM-DD')
@@ -617,6 +675,7 @@ const Reg = {
             if (!invalid) {
                 const db = new dbUtil()
 
+                this.is_loading = true
                 let status_poli = ''
                 await db.doQuery(`SELECT 
                         COUNT(no_rkm_medis) AS jml_periksa_poli 
@@ -685,12 +744,19 @@ const Reg = {
                         alert("Berhasil Simpan Registrasi")
                         this.kosongkan()
                         this.getList()
+                        this.is_loading = false
 
                         return db.closeDb()
                     }, err => {
-                        return db.closeDb().then(() => { throw err })
+                        return db.closeDb().then(() => { 
+                            this.is_loading = false
+                            throw err 
+                        })
                     })
-                    .catch(err => console.error(err))
+                    .catch(err => {
+                        this.is_loading = false
+                        console.error(err)
+                    })
             }
         },
         genNoReg: async function () {
