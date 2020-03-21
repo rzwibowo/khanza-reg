@@ -306,7 +306,7 @@ const Reg = {
                             <div class="input-group">
                                 <input type="search" class="form-control form-control-sm" 
                                     placeholder="Cari ..." v-model="cari" 
-                                    @keyup.enter="filterPasien">
+                                    @input="if (cari.length >= 3 || cari.length === 0) { filterPasien() }">
                                 <div class="input-group-append">
                                     <button class="btn btn-outline-secondary btn-sm" 
                                         type="button" @click="filterPasien">&#x1F50D;</button>
