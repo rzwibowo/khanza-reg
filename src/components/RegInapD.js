@@ -21,9 +21,11 @@ const RegInapD = {
                                         <label>No. Rawat</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control form-control-sm"
-                                                v-model="noRawat">
+                                                :class="{'is-invalid': invalid_input.includes('noRawat')}"
+                                                v-model="noRawat" :readonly="!searchable">
                                             <div class="input-group-append">
-                                                <button class="btn btn-sm btn-outline-secondary" type="button">...</button>
+                                                <button class="btn btn-sm btn-outline-secondary" 
+                                                    type="button" :disabled="!searchable">...</button>
                                             </div>
                                         </div>
                                     </div>
@@ -49,6 +51,7 @@ const RegInapD = {
                                         <label>Kamar</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control form-control-sm"
+                                                :class="{'is-invalid': invalid_input.includes('kd_kamar')}"
                                                 v-model="kd_kamar" @change="cariKamar">
                                             <div class="input-group-append">
                                                 <button class="btn btn-sm btn-outline-secondary" type="button"
@@ -106,6 +109,7 @@ const RegInapD = {
                                     <div class="form-group">
                                         <label>Biaya</label>
                                         <input type="text" class="form-control form-control-sm"
+                                            :class="{'is-invalid': invalid_input.includes('lama')}"
                                             placeholder="Lama inap" v-model="lama" 
                                             @focus="$event.target.select()">
                                     </div>
@@ -137,8 +141,10 @@ const RegInapD = {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" @click="$emit('close')">Tutup</button>
-                            <button type="button" class="btn btn-primary btn-sm">Simpan</button>
+                            <button type="button" class="btn btn-secondary btn-sm" 
+                                data-dismiss="modal" @click="$emit('close')">Tutup</button>
+                            <button type="button" class="btn btn-primary btn-sm"
+                                @click="saveReg">Simpan</button>
                         </div>
                     </div>
                 </div>
@@ -147,7 +153,7 @@ const RegInapD = {
                 @select-k="setKamar"></CariKamarD>
         </div>
     `,
-    props: ['noRm', 'nama', 'noRawat'],
+    props: ['noRm', 'nama', 'noRawat', 'searchable'],
     components: {
         CariKamarD
     },
@@ -164,10 +170,11 @@ const RegInapD = {
             status: '',
             tgl_masuk: null,
             jam_masuk: null,
-            diagnosa_awal: null,
-            lama: null,
+            diagnosa_awal: '',
+            lama: 1,
             trf_kamar: null,
-            dk_visible: false
+            dk_visible: false,
+            invalid_input: []
         }
     },
     mounted: function () {
@@ -221,6 +228,90 @@ const RegInapD = {
                     trf_kamar: null
                 })
             }
+        },
+        cekValid: function () {
+            this.invalid_input = []
+            let valid = [true]
+            
+            if (!this.noRawat) {
+                valid.push(false)
+                this.invalid_input.push('noRawat')
+                alert("Pasien tidak boleh kosong")
+            } else if (!this.kd_kamar) {
+                valid.push(false)
+                this.invalid_input.push('kd_kamar')
+                alert("Pilih kamar dengan benar")
+            } else if (this.status === 'ISI') {
+                valid.push(false)
+                this.invalid_input.push('kd_kamar')
+                alert("Kamar sudah digunakan, pilih kamar lain")
+            } else if (!this.lama || this.lama < 1) {
+                valid.push(false)
+                this.invalid_input.push('lama')
+                alert("Isikan lama inap dengan benar")
+            }
+
+            valid = valid.reduce((final_res, item) => {
+                return final_res && item
+            })
+
+            return valid
+        },
+        saveReg: function() {
+            const valid = this.cekValid()
+            if (valid) {
+                const db = new dbUtil()
+                
+                db.doQuery(`INSERT INTO
+                        kamar_inap
+                        (no_rawat, kd_kamar, trf_kamar, diagnosa_awal,
+                            diagnosa_akhir, tgl_masuk, jam_masuk,
+                            tgl_keluar, jam_keluar, lama, ttl_biaya,
+                            stts_pulang)
+                    VALUES
+                        ('${this.noRawat}', '${this.kd_kamar}', ${this.trf_kamar}, '${this.diagnosa_awal}',
+                            '', '${this.tgl_masuk}', '${this.jam_masuk}',
+                            '0000-00-00', '00:00:00', ${this.lama}, ${this.totalBiaya},
+                            '-')`)
+                .then(() => {
+                    return db.doQuery(`UPDATE
+                            reg_periksa
+                        SET
+                            status_lanjut = 'Ranap'
+                        WHERE
+                            no_rawat = '${this.noRawat}'`)
+                })
+                .then(() => {
+                    return db.doQuery(`UPDATE
+                            kamar
+                        SET
+                            status = 'ISI'
+                        WHERE
+                            kd_kamar = '${this.kd_kamar}'`)
+                })
+                .then(() => {
+                    alert("Berhasil simpan pasien rawat inap")
+                    this.kosongkan()
+                    this.$emit('close')
+
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+            }
+        },
+        kosongkan: function () {
+            this.kd_kamar = null
+            this.kd_bangsal = ''
+            this.nm_bangsal = ''
+            this.status = ''
+            this.diagnosa_awal = null
+            this.lama = null
+            this.trf_kamar = null
+
+            this.defaultTgl()
+            this.defaultJam()
         }
     }
 }

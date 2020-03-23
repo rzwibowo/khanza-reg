@@ -373,7 +373,8 @@ const Reg = {
             </div>
             <RegInapD v-show="di_visible" @close="di_visible = false" 
                 :no-rm="selected_pasien.no_rm" :nama="selected_pasien.nama"
-                :no-rawat="selected_pasien.no_rawat"></RegInapD>
+                :no-rawat="selected_pasien.no_rawat"
+                :searchable="false"></RegInapD>
             <CariPasienD v-show="dp_visible" @close="dp_visible = false" @select-p="getData"></CariPasienD>
         </div>
     `,
