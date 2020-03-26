@@ -149,7 +149,7 @@ const RegInapD = {
                     </div>
                 </div>
             </div>
-            <CariKamarD v-show="dk_visible" @close="dk_visible = false" 
+            <CariKamarD v-if="dk_visible" @close="dk_visible = false" 
                 @select-k="setKamar"></CariKamarD>
         </div>
     `,

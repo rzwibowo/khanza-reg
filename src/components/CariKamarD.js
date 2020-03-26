@@ -22,6 +22,9 @@ const CariKamarD = {
                             <div class="col-md-2">
                                 <button class="btn btn-sm btn-primary" @click="getData">Cari</button>
                             </div>
+                            <div class="col-md-5 text-right">
+                                <button class="btn btn-sm btn-secondary" @click="getData">Refresh</button>
+                            </div>
                         </div>
                         <div class="table-responsive" style="max-height: 70vh">
                             <table class="table table-hover table-striped table-sm">
