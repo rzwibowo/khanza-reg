@@ -231,8 +231,8 @@ const Reg = {
                                 <button type="button" class="btn btn-sm btn-primary float-right"
                                     @click="saveReg" :disabled="is_loading">
                                     <span class="spinner-border spinner-border-sm" 
-                                        role="status" aria-hidden="true" v-if="is_loading"></span>
-                                    <span v-else>Simpan</span>
+                                        role="status" aria-hidden="true" v-show="is_loading"></span>
+                                    <span v-show="!is_loading">Simpan</span>
                                 </button>
                                 <a class="btn btn-sm btn-secondary" href="#/regbaru">Pasien Baru</a>
                                 <button type="button" class="btn btn-sm btn-secondary" 
@@ -359,7 +359,7 @@ const Reg = {
                                     <tr v-show="act_visible === idx">
                                         <td colspan="13">
                                             <button type="button" class="btn btn-link btn-sm" 
-                                                @click="inap(pasien.no_rkm_medis, pasien.no_rawat, pasien.nm_pasien)">
+                                                @click="inap(pasien)">
                                                 Register Rawat Inap
                                             </button>
                                         </td>
@@ -448,7 +448,7 @@ const Reg = {
                     bb.nm_dokter, cc.no_rkm_medis, cc.nm_pasien, cc.jk,
                     cc.alamat, cc.tgl_lahir, 
                     CONCAT(aa.umurdaftar, ' ', aa.sttsumur) AS umur,
-                    aa.kd_poli, dd.nm_poli, aa.stts_daftar
+                    aa.kd_poli, dd.nm_poli, aa.stts, aa.stts_daftar
                 FROM
                     reg_periksa aa
                 LEFT JOIN dokter bb ON
@@ -830,13 +830,36 @@ const Reg = {
             this.genNoReg()
             this.genNoRawat()
         },
-        inap: function (no_rm, no_rawat, nama) {
-            this.selected_pasien = {
-                no_rm: no_rm,
-                no_rawat: no_rawat,
-                nama: nama
+        inap: async function (px) {
+            const db = new dbUtil()
+            let verif_bill = 0
+
+            await db.doQuery(`SELECT 
+                    COUNT(no_rawat) AS bill_count
+                FROM 
+                    billing 
+                WHERE 
+                    no_rawat = '${px.no_rawat}'`)
+            .then(res => {
+                verif_bill = res[0].bill_count
+                return db.closeDb()
+            }, err => {
+                return db.closeDb().then(() => { throw err })
+            })
+            .catch(err => console.error(err))
+
+            if (px.stts === 'Batal') {
+                alert('Pasien berstatus Batal Periksa')
+            } else if (parseInt(verif_bill) > 0) {
+                alert('Data billing terverifikasi')
+            } else {
+                this.selected_pasien = {
+                    no_rm: px.no_rkm_medis,
+                    no_rawat: px.no_rawat,
+                    nama: px.nm_pasien
+                }
+                this.di_visible = true
             }
-            this.di_visible = true
         },
         setWindowTitle: function () {
             const name = require('./package.json').name

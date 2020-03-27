@@ -144,7 +144,11 @@ const RegInapD = {
                             <button type="button" class="btn btn-secondary btn-sm" 
                                 data-dismiss="modal" @click="$emit('close')">Tutup</button>
                             <button type="button" class="btn btn-primary btn-sm"
-                                @click="saveReg">Simpan</button>
+                                @click="saveReg">
+                                <span class="spinner-border spinner-border-sm" 
+                                    role="status" aria-hidden="true" v-show="is_loading"></span>
+                                <span v-show="!is_loading">Simpan</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -174,6 +178,7 @@ const RegInapD = {
             lama: 1,
             trf_kamar: null,
             dk_visible: false,
+            is_loading: false,
             invalid_input: []
         }
     },
@@ -262,6 +267,7 @@ const RegInapD = {
             if (valid) {
                 const db = new dbUtil()
                 
+                this.is_loading = true
                 db.doQuery(`INSERT INTO
                         kamar_inap
                         (no_rawat, kd_kamar, trf_kamar, diagnosa_awal,
@@ -293,12 +299,19 @@ const RegInapD = {
                     alert("Berhasil simpan pasien rawat inap")
                     this.kosongkan()
                     this.$emit('close')
+                    this.is_loading = false
 
                     return db.closeDb()
                 }, err => {
-                    return db.closeDb().then(() => { throw err })
+                    return db.closeDb().then(() => {
+                        this.is_loading = false 
+                        throw err 
+                    })
                 })
-                .catch(err => console.error(err))
+                .catch(err => {
+                    this.is_loading = false
+                    console.error(err)
+                })
             }
         },
         kosongkan: function () {
