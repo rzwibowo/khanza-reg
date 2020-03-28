@@ -3,6 +3,7 @@ import Vue from './vendor/vue/vue.esm.browser.min.js'
 import { MainT } from './components/template/MainT.js'
 import { Reg } from './components/Reg.js'
 import { RegBaru } from './components/RegBaru.js'
+import { RegInap } from './components/RegInap.js'
 
 Vue.use(VueRouter)
 
@@ -15,6 +16,10 @@ const router = new VueRouter({
         {
             path: '/regbaru',
             component: RegBaru
+        },
+        {
+            path: '/reginap',
+            component: RegInap
         }
     ]
 });

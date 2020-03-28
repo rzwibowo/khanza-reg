@@ -32,7 +32,10 @@ const menu_ = [
                 }
             },
             {
-                label: 'Rawat Inap'
+                label: 'Rawat Inap',
+                click(menuItem, browserWindow, event) {
+                    browserWindow.loadURL(`file://${__dirname}/index.html#/reginap`)
+                }
             }
         ]
     },
