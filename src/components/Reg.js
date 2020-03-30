@@ -478,11 +478,16 @@ const Reg = {
         filterPasien: function () {
             this.pasiens_f = this.pasiens
             if (this.klinik_cari !== '-') {
-                this.pasiens_f = this.pasiens_f.filter(item => { return item.kd_poli === this.klinik_cari })
+                this.pasiens_f = this.pasiens_f.filter(item => { 
+                    return item.kd_poli === this.klinik_cari 
+                })
             }
             if (this.cari) {
                 this.pasiens_f = this.pasiens_f.filter(item => { 
-                    return item.nm_pasien.trim().toLowerCase().includes(this.cari.trim().toLowerCase()) 
+                    return item.nm_pasien.trim().toLowerCase()
+                        .includes(this.cari
+                            .trim().toLowerCase()
+                        ) 
                 })
             }
         },
