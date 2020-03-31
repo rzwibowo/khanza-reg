@@ -17,18 +17,18 @@ const CariPasienD = {
                                 <div class="form-group">
                                     <label>Nama</label>
                                     <input type="search" class="form-control form-control-sm"
-                                        v-model="nama" @input="if (nama.length >= 3 || nama.length === 0) { getData() }">
+                                        v-model="nama" @input="if (nama.length >= 3 || nama.length === 0) { getList() }">
                                 </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <label>Alamat</label>
                                     <input type="search" class="form-control form-control-sm"
-                                        v-model="alamat" @input="if (alamat.length >= 5 || alamat.length === 0) { getData() }">
+                                        v-model="alamat" @input="if (alamat.length >= 5 || alamat.length === 0) { getList() }">
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-sm btn-primary" @click="getData">Cari</button>
+                                <button class="btn btn-sm btn-primary" @click="getList">Cari</button>
                             </div>
                         </div>
                         <div class="table-responsive" style="max-height: 80vh">
@@ -73,10 +73,10 @@ const CariPasienD = {
         }
     },
     created: function () {
-        this.getData()
+        this.getList()
     },
     methods: {
-        getData: function () {
+        getList: function () {
             const db = new dbUtil()
             db.doQuery(`SELECT
                     no_rkm_medis, nm_pasien, jk, tgl_lahir, alamat

@@ -451,20 +451,17 @@ const Reg = {
                     aa.kd_poli, dd.nm_poli, aa.stts, aa.stts_daftar
                 FROM
                     reg_periksa aa
-                LEFT JOIN dokter bb ON
-                    aa.kd_dokter = bb.kd_dokter
-                LEFT JOIN pasien cc ON
-                    aa.no_rkm_medis = cc.no_rkm_medis
-                LEFT JOIN poliklinik dd ON
-                    aa.kd_poli = dd.kd_poli
-                LEFT JOIN penjab ee ON
-                    aa.kd_pj = ee.kd_pj
+                    LEFT JOIN dokter bb ON aa.kd_dokter = bb.kd_dokter
+                    LEFT JOIN pasien cc ON aa.no_rkm_medis = cc.no_rkm_medis
+                    LEFT JOIN poliklinik dd ON aa.kd_poli = dd.kd_poli
+                    LEFT JOIN penjab ee ON aa.kd_pj = ee.kd_pj
                 WHERE
                     dd.kd_poli <> 'IGDK'
                     AND tgl_registrasi BETWEEN '${this.tgl_awal}' AND '${this.tgl_akhir}'
                 ORDER BY
                     aa.tgl_registrasi, aa.jam_reg DESC`)
                 .then(res => {
+                    this.row_select = null
                     this.pasiens = res
                     this.klinik_cari = '-'
                     this.cari = ''
@@ -483,11 +480,12 @@ const Reg = {
                 })
             }
             if (this.cari) {
+                const keyword = this.cari.trim().toLowerCase()
                 this.pasiens_f = this.pasiens_f.filter(item => { 
-                    return item.nm_pasien.trim().toLowerCase()
-                        .includes(this.cari
-                            .trim().toLowerCase()
-                        ) 
+                    return item.nm_pasien.trim().toLowerCase().includes(keyword)
+                        || item.no_rkm_medis.trim().toLowerCase().includes(keyword)
+                        || item.alamat.trim().toLowerCase().includes(keyword)
+                        || item.nm_dokter.trim().toLowerCase().includes(keyword)
                 })
             }
         },
@@ -509,12 +507,9 @@ const Reg = {
                         CURDATE()) AS hari
                 FROM
                     pasien aa
-                LEFT JOIN kelurahan bb ON
-                    aa.kd_kel = bb.kd_kel
-                LEFT JOIN kecamatan cc ON
-                    aa.kd_kec = cc.kd_kec
-                LEFT JOIN kabupaten dd ON
-                    aa.kd_kab = dd.kd_kab
+                    LEFT JOIN kelurahan bb ON aa.kd_kel = bb.kd_kel
+                    LEFT JOIN kecamatan cc ON aa.kd_kec = cc.kd_kec
+                    LEFT JOIN kabupaten dd ON aa.kd_kab = dd.kd_kab
                 WHERE
                     no_rkm_medis = '${noRm}'`)
                 .then(res => {
@@ -637,10 +632,8 @@ const Reg = {
             await db.doQuery(`SELECT 
                     COUNT(aa.no_rkm_medis) AS jumlah
                 FROM pasien aa
-                    LEFT JOIN reg_periksa bb 
-                    ON bb.no_rkm_medis = aa.no_rkm_medis
-                    LEFT JOIN kamar_inap cc
-                    ON bb.no_rawat = cc.no_rawat
+                    LEFT JOIN reg_periksa bb ON bb.no_rkm_medis = aa.no_rkm_medis
+                    LEFT JOIN kamar_inap cc ON bb.no_rawat = cc.no_rawat
                 WHERE cc.stts_pulang = '-' 
                     AND aa.no_rkm_medis = '${this.pasien.no_rkm_medis}'`)
                 .then(res => {
@@ -775,7 +768,7 @@ const Reg = {
                     booking_registrasi 
                 WHERE 
                     kd_poli='${this.reg.kd_poli ? this.reg.kd_poli : ''}' 
-                AND tanggal_periksa='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
+                    AND tanggal_periksa='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
                 .then(res => {
                     max_no_booking = res[0].maxno
 
@@ -785,7 +778,7 @@ const Reg = {
                             reg_periksa 
                         WHERE 
                             kd_poli='${this.reg.kd_poli ? this.reg.kd_poli : ''}' 
-                        AND tgl_registrasi='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
+                            AND tgl_registrasi='${this.reg.tgl_registrasi ? this.reg.tgl_registrasi : ''}'`)
                 })
                 .then(res => {
                     max_no_register = res[0].maxno

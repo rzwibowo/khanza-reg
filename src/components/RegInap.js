@@ -131,10 +131,21 @@ const RegInap = {
                             </tbody>
                         </table>
                     </div>
-                    <label>Total Pasien: {{pasiens_f.length}}</label>
+                    <div class="row">
+                        <div class="col-md-1">
+                            <label>Total Pasien: {{pasiens_f.length}}</label>
+                        </div>
+                        <div class="col-md-11">
+                            <button class="btn btn-primary btn-sm" 
+                                @click="di_visible = !di_visible">
+                                Masuk
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <RegInapD v-show="di_visible"></RegInapD>
+            <RegInapD v-show="di_visible" @close="di_visible = false"
+                :searchable="true"></RegInapD>
          </div>
     `,
     components: {

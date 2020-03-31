@@ -45,7 +45,7 @@ const menu_ = [
             {
                 label: 'Developer',
                 click() {
-                    shell.openExternal('https://twitter.com/rzwibowo')
+                    shell.openExternal('https://wibowo-dev.web.app')
                 }
             },
             {

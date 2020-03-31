@@ -16,14 +16,14 @@ const CariKamarD = {
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <input type="search" class="form-control form-control-sm"
-                                        v-model="cari" @input="if (cari.length >= 3 || cari.length === 0) { getData() }">
+                                        v-model="cari" @input="if (cari.length >= 3 || cari.length === 0) { getList() }">
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-sm btn-primary" @click="getData">Cari</button>
+                                <button class="btn btn-sm btn-primary" @click="getList">Cari</button>
                             </div>
                             <div class="col-md-5 text-right">
-                                <button class="btn btn-sm btn-secondary" @click="getData">Refresh</button>
+                                <button class="btn btn-sm btn-secondary" @click="getList">Refresh</button>
                             </div>
                         </div>
                         <div class="table-responsive" style="max-height: 70vh">
@@ -70,10 +70,10 @@ const CariKamarD = {
         }
     },
     created: function () {
-        this.getData()
+        this.getList()
     },
     methods: {
-        getData: function () {
+        getList: function () {
             const db = new dbUtil()
             db.doQuery(`SELECT 
                     bb.kd_kamar, bb.kd_bangsal, aa.nm_bangsal, 

@@ -1,6 +1,7 @@
 import { dbUtil } from '../dbconn.js'
 
 import { CariKamarD } from './CariKamarD.js'
+import { CariPasienRegD } from './CariPasienRegD.js'
 
 const RegInapD = {
     template: `
@@ -24,7 +25,8 @@ const RegInapD = {
                                                 :class="{'is-invalid': invalid_input.includes('noRawat')}"
                                                 v-model="noRawat" :readonly="!searchable">
                                             <div class="input-group-append">
-                                                <button class="btn btn-sm btn-outline-secondary" 
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                    @click="dp_visible = !dp_visible" 
                                                     type="button" :disabled="!searchable">...</button>
                                             </div>
                                         </div>
@@ -155,11 +157,14 @@ const RegInapD = {
             </div>
             <CariKamarD v-if="dk_visible" @close="dk_visible = false" 
                 @select-k="setKamar"></CariKamarD>
+            <CariPasienRegD v-if="dp_visible" @close="dp_visible = false" 
+                @select-p="setPasien"></CariPasienRegD>
         </div>
     `,
     props: ['noRm', 'nama', 'noRawat', 'searchable'],
     components: {
-        CariKamarD
+        CariKamarD,
+        CariPasienRegD
     },
     computed: {
         totalBiaya: function () {
@@ -178,6 +183,7 @@ const RegInapD = {
             lama: 1,
             trf_kamar: null,
             dk_visible: false,
+            dp_visible: false,
             is_loading: false,
             invalid_input: []
         }
@@ -199,6 +205,9 @@ const RegInapD = {
             this.kd_bangsal = kamar.kd_bangsal
             this.trf_kamar = kamar.trf_kamar
             this.status = kamar.status
+        },
+        setPasien: function () {
+            
         },
         getData: function(kodeBed) {
             const db = new dbUtil()
