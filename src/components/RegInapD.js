@@ -23,7 +23,8 @@ const RegInapD = {
                                         <div class="input-group">
                                             <input type="text" class="form-control form-control-sm"
                                                 :class="{'is-invalid': invalid_input.includes('noRawat')}"
-                                                v-model="noRawat" :readonly="!searchable">
+                                                v-model="noRawat" :readonly="!searchable"
+                                                @input="getDataPasien">
                                             <div class="input-group-append">
                                                 <button class="btn btn-sm btn-outline-secondary"
                                                     @click="dp_visible = !dp_visible" 
@@ -206,10 +207,12 @@ const RegInapD = {
             this.trf_kamar = kamar.trf_kamar
             this.status = kamar.status
         },
-        setPasien: function () {
-            
+        setPasien: function (px) {
+            this.noRm = px.no_rm
+            this.noRawat = px.no_rawat
+            this.nama = px.nama
         },
-        getData: function(kodeBed) {
+        getDataBed: function(kodeBed) {
             const db = new dbUtil()
             db.doQuery(`SELECT 
                     bb.kd_kamar, bb.kd_bangsal, aa.nm_bangsal, 
@@ -230,9 +233,33 @@ const RegInapD = {
             })
             .catch(err => console.error(err))
         },
+        getDataPasien: function () {
+            if (this.noRawat.trim().length === 17) {
+                const db = new dbUtil()
+                db.doQuery(`SELECT
+                        no_rawat, bb.no_rkm_medis, bb.nm_pasien
+                    FROM
+                        reg_periksa aa
+                        LEFT JOIN pasien bb ON aa.no_rkm_medis = bb.no_rkm_medis
+                    WHERE
+                        no_rawat = '${this.noRawat}'`)
+                .then(res => {
+                    if (res.length > 0) {
+                        this.noRm = res[0].no_rkm_medis
+                        this.nama = res[0].nm_pasien
+                    }
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+            } else {
+                this.noRm = ''
+                this.nama = ''
+            }
+        },
         cariKamar: function () {
             if (this.kd_kamar.length >= 6) {
-                this.getData(this.kd_kamar)
+                this.getDataBed(this.kd_kamar)
             } else if (this.pasien.no_rkm_medis.length === 0) {
                 this.setKamar({
                     kd_kamar: null,

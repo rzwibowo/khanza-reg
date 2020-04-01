@@ -61,10 +61,10 @@ const CariPasienRegD = {
                                 </thead>
                                 <tbody>
                                     <tr v-for="(pasien, idx) in pasiens_f" :key="pasien.no_rkm_medis" 
-                                        @click="row_select = idx" @dblclick="selectPx(pasien.no_rkm_medis)" 
+                                        @click="row_select = idx" @dblclick="selectPx(pasien)" 
                                         :class="{selected: row_select === idx}">
                                         <td>
-                                            <a href="#" @click="selectPx(pasien.no_rkm_medis)">
+                                            <a href="#" @click="selectPx(pasien)">
                                                 {{ pasien.no_rkm_medis }}
                                             </a>
                                         </td>
@@ -171,9 +171,38 @@ const CariPasienRegD = {
                 })
                 .catch(err => console.error(err))
         },
-        selectPx: function (noRm) {
-            this.$emit('select-p', noRm)
-            this.$emit('close')
+        selectPx: async function (px) {
+            const db = new dbUtil()
+            let verif_bill = 0
+
+            await db.doQuery(`SELECT 
+                    COUNT(no_rawat) AS bill_count
+                FROM 
+                    billing 
+                WHERE 
+                    no_rawat = '${px.no_rawat}'`)
+            .then(res => {
+                verif_bill = res[0].bill_count
+                return db.closeDb()
+            }, err => {
+                return db.closeDb().then(() => { throw err })
+            })
+            .catch(err => console.error(err))
+
+            if (px.stts === 'Batal') {
+                alert('Pasien berstatus Batal Periksa')
+            } else if (parseInt(verif_bill) > 0) {
+                alert('Data billing terverifikasi')
+            } else {
+                const selected_pasien = {
+                    no_rm: px.no_rkm_medis,
+                    no_rawat: px.no_rawat,
+                    nama: px.nm_pasien
+                }
+                this.$emit('select-p', selected_pasien)
+                this.$emit('close')
+            }
+
         }
     }
 }

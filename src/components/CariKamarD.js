@@ -13,6 +13,14 @@ const CariKamarD = {
                     </div>
                     <div class="modal-body">
                         <div class="row align-items-end">
+                            <div class="col-md-2">
+                                <select class="form-control form-control-sm" 
+                                    v-model="status_cari" @change="getList">
+                                    <option value="-">SEMUA</option>
+                                    <option value="KOSONG">KOSONG</option>
+                                    <option value="ISI">ISI</option>
+                                </select>
+                            </div>
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <input type="search" class="form-control form-control-sm"
@@ -21,9 +29,6 @@ const CariKamarD = {
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-sm btn-primary" @click="getList">Cari</button>
-                            </div>
-                            <div class="col-md-5 text-right">
-                                <button class="btn btn-sm btn-secondary" @click="getList">Refresh</button>
                             </div>
                         </div>
                         <div class="table-responsive" style="max-height: 70vh">
@@ -66,6 +71,7 @@ const CariKamarD = {
         return {
             cari: '',
             kamars: [],
+            status_cari: '-',
             row_select: null
         }
     },
@@ -82,12 +88,12 @@ const CariKamarD = {
                     bangsal aa
                     JOIN kamar bb ON bb.kd_bangsal = aa.kd_bangsal
                 WHERE
-                    aa.nm_bangsal LIKE '%${this.cari ? this.cari : '' }%'
-                    OR bb.status LIKE '%${this.cari ? this.cari : '' }%'
-                    OR bb.kd_kamar LIKE '%${this.cari ? this.cari : '' }%'
-                    OR bb.kd_bangsal LIKE '%${this.cari ? this.cari : '' }%'
-                    OR bb.kelas LIKE '%${this.cari ? this.cari : '' }%'
-                    OR bb.trf_kamar LIKE '%${this.cari ? this.cari : '' }%'
+                    (aa.nm_bangsal LIKE '%${this.cari ? this.cari : '' }%'
+                        OR bb.kd_kamar LIKE '%${this.cari ? this.cari : '' }%'
+                        OR bb.kd_bangsal LIKE '%${this.cari ? this.cari : '' }%'
+                        OR bb.kelas LIKE '%${this.cari ? this.cari : '' }%'
+                        OR bb.trf_kamar LIKE '%${this.cari ? this.cari : '' }%')
+                    AND bb.status LIKE '%${this.status_cari !== '-' ? this.status_cari : '' }%'
                     AND bb.statusdata = '1'
                 ORDER BY 
                     aa.nm_bangsal`)
