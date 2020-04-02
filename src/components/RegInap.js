@@ -235,7 +235,7 @@ const RegInap = {
                     ? this.pasiens
                         .map(item => { return `'${item.no_rawat}'` })
                         .join()
-                    : ''
+                    : `''`
 
                     return db.doQuery(`SELECT
                         bb.no_rkm_medis, bb.nm_pasien, cc.no_rawat, cc.no_rawat2,
