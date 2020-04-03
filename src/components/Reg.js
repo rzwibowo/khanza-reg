@@ -1,5 +1,6 @@
 require('dotenv').config()
 const remote = require('electron').remote
+const ipcRenderer = require('electron').ipcRenderer
 const hmac_sha256 = require('crypto-js/hmac-sha256')
 const enc_base64 = require('crypto-js/enc-base64')
 
@@ -118,8 +119,8 @@ const Reg = {
                                 <input type="text" class="form-control form-control-sm" 
                                     :value="pasien.namakeluarga" readonly>
                             </div>
+                            <button type="button" class="btn btn-sm btn-secondary" @click="testprint">Cetak Kartu</button>
                             <!-- dalam perencanaan --
-                            <button type="button" class="btn btn-sm btn-secondary">Cetak Kartu</button>
                             <button type="button" class="btn btn-sm btn-secondary">Cetak Form</button>
                             -->
                         </div>
@@ -862,6 +863,20 @@ const Reg = {
         setWindowTitle: function () {
             const name = require('./package.json').name
             remote.getCurrentWindow().setTitle(`${name} | Registrasi Rawat Jalan`)
+        },
+        testprint: function () {
+            ipcRenderer.send('print', {
+                type: 'card',
+                data: {
+                    no_rm: '941028',
+                    nama: 'Tony Stark',
+                    alamat: 'Cendana, 01/01 - Selomerto',
+                    tgl_lahir: '12 Mei 1943',
+                    jk: 'L',
+                    jaminan: 'UMUM',
+                    tgl_reg: '23/04/18'
+                }
+            })
         }
     }
 }

@@ -1,10 +1,10 @@
-const { electron, app, BrowserWindow, Menu, ipcMain } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron')
 const path = require('path')
 const url = require('url')
 const menu = require('./menu')
-
 let mainWindow
 let childWindow
+let workerWindow
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -33,18 +33,39 @@ function createWindow() {
         slashes: true
     }))
 
+    workerWindow = new BrowserWindow({
+        show: false,
+        frame: false,
+        resizable: false,
+        webPreferences: { nodeIntegration: true }
+    })
+    workerWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'report.html'),
+        protocol: 'file',
+        slashes: true
+    }))
+
     const menuitem = Menu.buildFromTemplate(menu.menu)
     Menu.setApplicationMenu(menuitem)
 }
 
-ipcMain.on('entry-accepted', (event, arg) => {
+ipcMain.on('entry-accepted', (_event, arg) => {
     if (arg === 'ping') {
         mainWindow.maximize()
         childWindow.close()
     }
 })
 
-ipcMain.on('close', (event, arg) => {
+ipcMain.on('print', (_event, content) => {
+    console.log(content)
+    workerWindow.webContents.send('print', content)
+})
+
+ipcMain.on('readyToPrint', _event => {
+    workerWindow.webContents.print()
+})
+
+ipcMain.on('close', (_event, _arg) => {
     app.quit()
 })
 
