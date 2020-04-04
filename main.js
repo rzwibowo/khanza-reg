@@ -62,7 +62,12 @@ ipcMain.on('print', (_event, content) => {
 })
 
 ipcMain.on('readyToPrint', _event => {
-    workerWindow.webContents.print()
+    workerWindow.webContents.print({
+        margins: {
+            top: 0,
+            left: 0
+        }
+    })
 })
 
 ipcMain.on('close', (_event, _arg) => {

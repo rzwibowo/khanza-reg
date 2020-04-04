@@ -119,7 +119,8 @@ const Reg = {
                                 <input type="text" class="form-control form-control-sm" 
                                     :value="pasien.namakeluarga" readonly>
                             </div>
-                            <button type="button" class="btn btn-sm btn-secondary" @click="testprint">Cetak Kartu</button>
+                            <button type="button" class="btn btn-sm btn-secondary" 
+                                @click="cetakKartu" :disabled="!pasien.no_rkm_medis">Cetak Kartu</button>
                             <!-- dalam perencanaan --
                             <button type="button" class="btn btn-sm btn-secondary">Cetak Form</button>
                             -->
@@ -497,7 +498,7 @@ const Reg = {
                     nm_pasien, no_ktp, CONCAT(alamat, ', ', bb.nm_kel) AS alamat_,
                     cc.nm_kec, dd.nm_kab, namakeluarga, keluarga, alamatpj,
                     IF(tgl_daftar = '${tglHariIni}', 'Baru', 'Lama') AS status,
-                    no_peserta, tgl_lahir, 
+                    no_peserta, tgl_lahir, jk, ee.png_jawab, tgl_daftar,
                     TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) AS tahun,
                     (TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
                         - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) DIV 12) * 12)) AS bulan,
@@ -511,6 +512,7 @@ const Reg = {
                     LEFT JOIN kelurahan bb ON aa.kd_kel = bb.kd_kel
                     LEFT JOIN kecamatan cc ON aa.kd_kec = cc.kd_kec
                     LEFT JOIN kabupaten dd ON aa.kd_kab = dd.kd_kab
+                    LEFT JOIN penjab ee ON aa.kd_pj = ee.kd_pj
                 WHERE
                     no_rkm_medis = '${noRm}'`)
                 .then(res => {
@@ -864,17 +866,17 @@ const Reg = {
             const name = require('./package.json').name
             remote.getCurrentWindow().setTitle(`${name} | Registrasi Rawat Jalan`)
         },
-        testprint: function () {
+        cetakKartu: function () {
             ipcRenderer.send('print', {
                 type: 'card',
                 data: {
-                    no_rm: '941028',
-                    nama: 'Tony Stark',
-                    alamat: 'Cendana, 01/01 - Selomerto',
-                    tgl_lahir: '12 Mei 1943',
-                    jk: 'L',
-                    jaminan: 'UMUM',
-                    tgl_reg: '23/04/18'
+                    no_rm: this.pasien.no_rkm_medis,
+                    nama: this.pasien.nm_pasien,
+                    alamat: this.pasien.alamat_,
+                    tgl_lahir: moment(this.pasien.tgl_lahir).locale('id').format('D MMM YYYY'),
+                    jk: this.pasien.jk,
+                    jaminan: this.pasien.png_jawab,
+                    tgl_reg: moment(this.pasien.tgl_daftar).locale('id').format('DD/MM/YY')
                 }
             })
         }

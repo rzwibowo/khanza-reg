@@ -5,13 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        .kartu {
-            width: 12cm;
-            height: 5cm;
+        body {
+            padding: 0;
+            margin: 0;
         }
+        /* #region kartu pasien */
+        .kartu {
+            width: 8.5cm;
+            height: 5.3cm;
+        }
+        .kartu h1.rm, .kartu h3.nama, .kartu p.alamat,
+        .kartu p.data, .kartu small.reg {
+            margin-top: 0;
+            margin-left: 2mm;
+            margin-bottom: 0;
+            padding: 0;
+            font-family: 'Arial Narrow';
+        }
+        .kartu h1.rm {
+            font-family: serif;
+            font-size: 7mm;
+            margin-top: 8mm;
+        }
+        .kartu h3.nama {
+            font-size: 3mm;
+            font-weight: bold;
+        }
+        .kartu p.alamat {
+            font-size: 3mm;
+        }
+        .kartu p.data {
+            font-size: 2mm;
+        }
+        .kartu small.reg {
+            display: block;
+            font-size: 2mm;
+            font-style: italic;
+        }
+        /* #endregion kartu pasien */
     </style>
 </head>
 <body>
+    <div id="report"></div>
     <script src="./src/vendor/jsbarcode/JsBarcode.all.min.js"></script>
     <script src="./src/report.js"></script>
 </body>
