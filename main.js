@@ -57,7 +57,6 @@ ipcMain.on('entry-accepted', (_event, arg) => {
 })
 
 ipcMain.on('print', (_event, content) => {
-    console.log(content)
     workerWindow.webContents.send('print', content)
 })
 

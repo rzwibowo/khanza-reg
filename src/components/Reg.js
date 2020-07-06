@@ -422,6 +422,7 @@ const Reg = {
     mounted: function () {
         this.setWindowTitle()
         this.defaultTgl()
+        this.defaultRm()
         this.defaultTglList()
         this.getList()
         setInterval(() => { this.defaultJam() }, 1000)
@@ -441,6 +442,12 @@ const Reg = {
         },
         defaultJam: function () {
             this.reg.jam_reg = moment().format('HH:mm:ss')
+        },
+        defaultRm: function () {
+            if (this.$route.params.no_rm) {
+                this.pasien.no_rkm_medis = this.$route.params.no_rm
+                this.cariPasien()
+            }
         },
         //#region Olah Data Pasien
         getList: function () {

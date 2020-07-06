@@ -780,7 +780,10 @@ const RegBaru = {
                             VALUES('${this.reg.no_rkm_medis}')`)
                     })
                     .then(() => {
-                        alert("Berhasil simpan pasien baru")
+                        const konfirmasi = confirm("Berhasil simpan pasien baru. Lanjutkan registrasi rawat jalan?")
+                        if (konfirmasi) {
+                            window.location.replace('#/rm-' + this.reg.no_rkm_medis)
+                        }
                         this.kosongkan()
 
                         return db.closeDb()

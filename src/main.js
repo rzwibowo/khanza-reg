@@ -14,6 +14,10 @@ const router = new VueRouter({
             component: Reg
         },
         {
+            path: '/rm-:no_rm',
+            component: Reg
+        },
+        {
             path: '/regbaru',
             component: RegBaru
         },
