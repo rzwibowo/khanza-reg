@@ -39,6 +39,12 @@ new Vue({
                     
                     if (resAdmin.length !== 0 || resUser.length !== 0) {
                         ipc.sendSync('entry-accepted', 'ping')
+
+                        if (resAdmin.length !== 0) {
+                            ipc.sendSync('setAksesEdit', true)
+                        } else if (resUser.length !== 0) {
+                            ipc.sendSync('setAksesEdit', false)
+                        }
                     } else {
                         this.w.setSize(400, 370)
                         this.notif = 'Username atau Password salah'
@@ -49,7 +55,6 @@ new Vue({
                     return db.closeDb().then(() => { throw err })
                 })
                 .catch(err => console.error(err))
-
         },
         keluar: function () {
             ipc.sendSync('close')

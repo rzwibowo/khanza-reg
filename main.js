@@ -5,6 +5,7 @@ const menu = require('./menu')
 let mainWindow
 let childWindow
 let workerWindow
+let editAkses
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -67,6 +68,14 @@ ipcMain.on('readyToPrint', _event => {
             left: 0
         }
     })
+})
+
+ipcMain.on('setAksesEdit', (_event, args) => {
+    editAkses = args
+})
+
+ipcMain.on('getAksesEdit', event => {
+    event.returnValue = editAkses
 })
 
 ipcMain.on('close', (_event, _arg) => {

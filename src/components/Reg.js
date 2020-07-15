@@ -364,6 +364,10 @@ const Reg = {
                                                 @click="inap(pasien)">
                                                 Register Rawat Inap
                                             </button>
+                                            <button type="button" class="btn btn-link btn-sm"
+                                                @click="ubah(pasien)">
+                                                Ubah
+                                            </button>
                                         </td>
                                     </tr>
                                 </template>
@@ -414,6 +418,7 @@ const Reg = {
             dp_visible: false,
             selected_pasien: {},
             is_loading: false,
+            is_edit: false,
             validasi: [false, false, false, false] 
                 // utk no RM, cara bayar, ruang klinik, dokter
                 // jika semua true, tidak valid
@@ -685,20 +690,6 @@ const Reg = {
                 const db = new dbUtil()
 
                 this.is_loading = true
-                let status_poli = ''
-                await db.doQuery(`SELECT 
-                        COUNT(no_rkm_medis) AS jml_periksa_poli 
-                    FROM 
-                        reg_periksa 
-                    WHERE 
-                        no_rkm_medis = '${this.pasien.no_rkm_medis}'
-                        AND kd_poli = '${this.reg.kd_poli}'`)
-                    .then(res => {
-                        res[0].jml_periksa_poli > 0 ? status_poli = 'Lama' : status_poli = 'Baru'
-                    }, err => {
-                        return db.closeDb().then(() => { throw err })
-                    })
-                    .catch(err => console.error(err))
 
                 const biaya = this.pasien.status === 'Lama'
                     ? this.polikliniks.filter(item => {
@@ -724,48 +715,187 @@ const Reg = {
                     }
                 }
 
-                db.doQuery(`INSERT INTO
-                        reg_periksa
-                        (no_reg, no_rawat, tgl_registrasi, jam_reg, kd_dokter, no_rkm_medis, kd_poli,
-                            p_jawab, almt_pj, hubunganpj, biaya_reg, stts, stts_daftar, status_lanjut,
-                            kd_pj, umurdaftar, sttsumur, status_bayar, status_poli)
-                    VALUES
-                        ('${this.reg.no_reg}', '${this.reg.no_rawat}', '${this.reg.tgl_registrasi}',
-                            '${this.reg.jam_reg}', '${this.reg.kd_dokter}', '${this.pasien.no_rkm_medis}',
-                            '${this.reg.kd_poli}', '${this.pasien.namakeluarga}', '${this.pasien.alamatpj}',
-                            '${this.pasien.keluarga}', ${biaya}, 'Belum', '${this.pasien.status}', 'Ralan',
-                            '${this.reg.kd_pj}', ${umur}, '${statusumur}', 'Belum Bayar', '${status_poli}')`)
-                    .then(() => {
-                        return db.doQuery(`UPDATE pasien
-                            SET umur = CONCAT(
-                                CONCAT(
-                                    CONCAT(TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()), ' Th '),
-                                    CONCAT(TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
-                                        - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12), ' Bl ')),
-                                    CONCAT(TIMESTAMPDIFF(DAY, DATE_ADD(
-                                        DATE_ADD(tgl_lahir,INTERVAL TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) YEAR), 
-                                        INTERVAL TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
-                                            - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12) MONTH), CURDATE()), ' Hr'))
-                            WHERE
-                                no_rkm_medis = ${this.pasien.no_rkm_medis}`)
-                    })
-                    .then(() => {
-                        alert("Berhasil Simpan Registrasi")
-                        this.kosongkan()
-                        this.getList()
-                        this.is_loading = false
-
-                        return db.closeDb()
-                    }, err => {
-                        return db.closeDb().then(() => { 
-                            this.is_loading = false
-                            throw err 
+                if (!this.is_edit) {
+                    let status_poli = ''
+                    await db.doQuery(`SELECT 
+                            COUNT(no_rkm_medis) AS jml_periksa_poli 
+                        FROM 
+                            reg_periksa 
+                        WHERE 
+                            no_rkm_medis = '${this.pasien.no_rkm_medis}'
+                            AND kd_poli = '${this.reg.kd_poli}'`)
+                        .then(res => {
+                            res[0].jml_periksa_poli > 0 ? status_poli = 'Lama' : status_poli = 'Baru'
+                        }, err => {
+                            return db.closeDb().then(() => { throw err })
                         })
-                    })
-                    .catch(err => {
-                        this.is_loading = false
-                        console.error(err)
-                    })
+                        .catch(err => console.error(err))
+
+                    db.doQuery(`INSERT INTO
+                            reg_periksa
+                            (no_reg, no_rawat, tgl_registrasi, jam_reg, kd_dokter, no_rkm_medis, kd_poli,
+                                p_jawab, almt_pj, hubunganpj, biaya_reg, stts, stts_daftar, status_lanjut,
+                                kd_pj, umurdaftar, sttsumur, status_bayar, status_poli)
+                        VALUES
+                            ('${this.reg.no_reg}', '${this.reg.no_rawat}', '${this.reg.tgl_registrasi}',
+                                '${this.reg.jam_reg}', '${this.reg.kd_dokter}', '${this.pasien.no_rkm_medis}',
+                                '${this.reg.kd_poli}', '${this.pasien.namakeluarga}', '${this.pasien.alamatpj}',
+                                '${this.pasien.keluarga}', ${biaya}, 'Belum', '${this.pasien.status}', 'Ralan',
+                                '${this.reg.kd_pj}', ${umur}, '${statusumur}', 'Belum Bayar', '${status_poli}')`)
+                        .then(() => {
+                            return db.doQuery(`UPDATE pasien
+                                SET umur = CONCAT(
+                                    CONCAT(
+                                        CONCAT(TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()), ' Th '),
+                                        CONCAT(TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
+                                            - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12), ' Bl ')),
+                                        CONCAT(TIMESTAMPDIFF(DAY, DATE_ADD(
+                                            DATE_ADD(tgl_lahir,INTERVAL TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) YEAR), 
+                                            INTERVAL TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) 
+                                                - ((TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) div 12) * 12) MONTH), CURDATE()), ' Hr'))
+                                WHERE
+                                    no_rkm_medis = ${this.pasien.no_rkm_medis}`)
+                        })
+                        .then(() => {
+                            alert("Berhasil Simpan Registrasi")
+                            this.kosongkan()
+                            this.getList()
+                            this.is_loading = false
+
+                            return db.closeDb()
+                        }, err => {
+                            return db.closeDb().then(() => { 
+                                this.is_loading = false
+                                throw err 
+                            })
+                        })
+                        .catch(err => {
+                            this.is_loading = false
+                            console.error(err)
+                        })
+                } else {
+                    const akses_edit = ipcRenderer.sendSync('getAksesEdit')
+                    const this_ = this
+                    const reg_ = this_.reg
+                    const pasien_ = this_.pasien
+
+                    function updateReg () {
+                        db.doQuery(`UPDATE reg_periksa
+                            SET
+                                no_reg = '${reg_.no_reg}',
+                                tgl_registrasi = '${reg_.tgl_registrasi}',
+                                jam_reg = '${reg_.jam_reg}',
+                                kd_dokter = '${reg_.kd_dokter}',
+                                no_rkm_medis = '${pasien_.no_rkm_medis}',
+                                kd_poli = '${reg_.kd_poli}',
+                                p_jawab = '${pasien_.namakeluarga}',
+                                almt_pj = '${pasien_.alamatpj}',
+                                biaya_reg = ${biaya},
+                                hubunganpj = '${pasien_.keluarga}',
+                                stts_daftar = '${pasien_.status}',
+                                kd_pj = '${reg_.kd_pj}',
+                                umurdaftar = '${umur}',
+                                sttsumur = '${statusumur}'
+                            WHERE
+                                no_rawat = '${reg_.no_rawat}'`)
+                            .then(() => {
+                                alert("Berhasil Ubah Registrasi")
+                                this_.kosongkan()
+                                this_.getList()
+                                this_.is_loading = false
+    
+                                return db.closeDb()
+                            }, err => {
+                                return db.closeDb().then(() => { 
+                                    this_.is_loading = false
+                                    throw err 
+                                })
+                            })
+                            .catch(err => {
+                                this_.is_loading = false
+                                console.error(err)
+                            })
+                    }
+
+                    if (akses_edit) {
+                        updateReg()
+                    } else {
+                        const trx = [false, false, false, false, false]
+
+                        await db.doQuery(`SELECT
+                                COUNT(no_rawat) as trx
+                            FROM
+                                rawat_jl_dr
+                            WHERE
+                                no_rawat = '${this.reg.no_rawat}'`)
+                            .then(res => {
+                                if (res[0].trx > 0) { trx[0] = true }
+                            })
+                            .catch(err => {
+                                console.error(err)
+                            })
+
+                        await db.doQuery(`SELECT
+                                COUNT(no_rawat) as trx
+                            FROM
+                                rawat_jl_pr
+                            WHERE
+                                no_rawat = '${this.reg.no_rawat}'`)
+                            .then(res => {
+                                if (res[0].trx > 0) { trx[1] = true }
+                            })
+                            .catch(err => {
+                                console.error(err)
+                            })
+
+                        await db.doQuery(`SELECT
+                                COUNT(no_rawat) as trx
+                            FROM
+                                rawat_jl_drpr
+                            WHERE
+                                no_rawat = '${this.reg.no_rawat}'`)
+                            .then(res => {
+                                if (res[0].trx > 0) { trx[2] = true }
+                            })
+                            .catch(err => {
+                                console.error(err)
+                            })
+
+                        await db.doQuery(`SELECT
+                                COUNT(no_rawat) as trx
+                            FROM
+                                periksa_lab
+                            WHERE
+                                no_rawat = '${this.reg.no_rawat}'`)
+                            .then(res => {
+                                if (res[0].trx > 0) { trx[3] = true }
+                            })
+                            .catch(err => {
+                                console.error(err)
+                            })
+
+                        await db.doQuery(`SELECT
+                                COUNT(no_rawat) as trx
+                            FROM
+                                kamar_inap
+                            WHERE
+                                no_rawat = '${this.reg.no_rawat}'`)
+                            .then(res => {
+                                if (res[0].trx > 0) { trx[4] = true }
+                            })
+                            .catch(err => {
+                                console.error(err)
+                            })
+
+                        const valid = trx.reduce((total, item) => { return total || item })
+
+                        if (valid) {
+                            alert('Tidak bisa menyimpan ubahan, pasien sudah ada transaksi sebelumnya')
+                        } else {
+                            updateReg()
+                        }
+                    }
+                }
             }
         },
         genNoReg: async function () {
@@ -837,6 +967,7 @@ const Reg = {
             this.defaultTgl()
             this.genNoReg()
             this.genNoRawat()
+            this.is_edit = false
         },
         inap: async function (px) {
             const db = new dbUtil()
@@ -868,6 +999,67 @@ const Reg = {
                 }
                 this.di_visible = true
             }
+        },
+        ubah: function (px) {
+            const db = new dbUtil()
+
+            this.pasien.no_rkm_medis =  px.no_rkm_medis
+            this.pasien.nm_pasien = px.nm_pasien
+            this.pasien.status = px.stts_daftar
+            this.pasien.tgl_lahir = px.tgl_lahir
+
+            this.reg.no_reg = px.no_reg
+            this.reg.no_rawat = px.no_rawat
+            this.reg.tgl_registrasi = px.tgl_registrasi
+            this.reg.kd_poli = px.kd_poli
+
+            db.doQuery(`SELECT 
+                    bb.kd_dokter, cc.no_ktp, 
+                    CONCAT(alamat, ', ', ee.nm_kel) AS alamat_,
+                    ff.nm_kec, gg.nm_kab, namakeluarga, keluarga, alamatpj,
+                    no_peserta, cc.kd_pj, 
+                    TIMESTAMPDIFF(YEAR, cc.tgl_lahir, CURDATE()) AS tahun,
+                    (TIMESTAMPDIFF(MONTH, cc.tgl_lahir, CURDATE()) 
+                        - ((TIMESTAMPDIFF(MONTH, cc.tgl_lahir, CURDATE()) DIV 12) * 12)) AS bulan,
+                    TIMESTAMPDIFF(DAY, DATE_ADD(
+                        DATE_ADD(cc.tgl_lahir, INTERVAL TIMESTAMPDIFF(YEAR, cc.tgl_lahir, CURDATE()) YEAR),
+                        INTERVAL TIMESTAMPDIFF(MONTH, cc.tgl_lahir, CURDATE()) 
+                            - ((TIMESTAMPDIFF(MONTH, cc.tgl_lahir, CURDATE()) DIV 12) * 12) MONTH),
+                        CURDATE()) AS hari
+                FROM
+                    reg_periksa aa
+                    LEFT JOIN dokter bb ON aa.kd_dokter = bb.kd_dokter
+                    LEFT JOIN pasien cc ON aa.no_rkm_medis = cc.no_rkm_medis
+                    LEFT JOIN poliklinik dd ON aa.kd_poli = dd.kd_poli                 
+                    LEFT JOIN kelurahan ee ON cc.kd_kel = ee.kd_kel
+                    LEFT JOIN kecamatan ff ON cc.kd_kec = ff.kd_kec
+                    LEFT JOIN kabupaten gg ON cc.kd_kab = gg.kd_kab
+                WHERE
+                    no_rawat = '${px.no_rawat}'`)
+                .then(res => {
+                    this.pasien.no_ktp = res[0].no_ktp
+                    this.pasien.alamat_ = res[0].alamat_
+                    this.pasien.nm_kec = res[0].nm_kec
+                    this.pasien.nm_kab = res[0].nm_kab
+                    this.pasien.no_peserta = res[0].no_peserta
+                    this.pasien.tahun = res[0].tahun
+                    this.pasien.bulan = res[0].bulan
+                    this.pasien.hari = res[0].hari
+                    this.pasien.keluarga = res[0].keluarga
+                    this.pasien.namakeluarga = res[0].namakeluarga
+                    this.pasien.alamatpj = res[0].alamatpj
+
+                    this.reg.kd_pj = res[0].kd_pj
+                    this.reg.kd_dokter = res[0].kd_dokter
+
+                    return db.closeDb()
+                }, err => {
+                    return db.closeDb().then(() => { throw err })
+                })
+                .catch(err => console.error(err))
+
+            this.reg = px
+            this.is_edit = true
         },
         setWindowTitle: function () {
             const name = require('./package.json').name

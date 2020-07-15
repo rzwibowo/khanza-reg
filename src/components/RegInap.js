@@ -61,7 +61,6 @@ const RegInap = {
                         <table class="table table-sm table-hover table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th></th>
                                     <th>No. Rawat</th>
                                     <th>No. RM</th>
                                     <th>Nama</th>
@@ -89,14 +88,6 @@ const RegInap = {
                             <tbody>
                                 <template v-for="(pasien, idx) in pasiens_f" :key="pasien.no_rawat">
                                     <tr @click="row_select = idx" :class="{selected: row_select === idx}">
-                                        <td>
-                                            <button class="btn btn-secondary btn-sm btn-action" 
-                                                @click="act_visible === idx ? act_visible = null : act_visible = idx"
-                                                v-if="pasien.no_rawat">
-                                                <span v-show="act_visible !== idx">▼</span>
-                                                <span v-show="act_visible === idx">▲</span>
-                                            </button>
-                                        </td>
                                         <td>{{ pasien.no_rawat }}</td>
                                         <td>{{ pasien.no_rkm_medis }}</td>
                                         <td style="white-space: nowrap">{{ pasien.nm_pasien }}</td>
@@ -119,13 +110,6 @@ const RegInap = {
                                         <td>{{ pasien.lama }}</td>
                                         <td style="white-space: nowrap">{{ pasien.nm_dokter }}</td>
                                         <td style="white-space: nowrap">{{ pasien.status_bayar }}</td>
-                                    </tr>
-                                    <tr v-show="act_visible === idx && pasien.no_rawat">
-                                        <td colspan="24">
-                                            <button type="button" class="btn btn-link btn-sm">
-                                                Opsi
-                                            </button>
-                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -163,7 +147,6 @@ const RegInap = {
             status_bayar: '-',
             cari: '',
             di_visible: false,
-            act_visible: null,
             row_select: null
         }
     },
