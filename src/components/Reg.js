@@ -1,6 +1,7 @@
 require('dotenv').config()
 const remote = require('electron').remote
 const ipcRenderer = require('electron').ipcRenderer
+const session = require('electron').session
 const hmac_sha256 = require('crypto-js/hmac-sha256')
 const enc_base64 = require('crypto-js/enc-base64')
 
@@ -774,7 +775,6 @@ const Reg = {
                             console.error(err)
                         })
                 } else {
-                    const akses_edit = ipcRenderer.sendSync('getAksesEdit')
                     const this_ = this
                     const reg_ = this_.reg
                     const pasien_ = this_.pasien
@@ -817,83 +817,79 @@ const Reg = {
                             })
                     }
 
-                    if (akses_edit) {
-                        updateReg()
+                    const trx = [false, false, false, false, false]
+
+                    await db.doQuery(`SELECT
+                            COUNT(no_rawat) as trx
+                        FROM
+                            rawat_jl_dr
+                        WHERE
+                            no_rawat = '${this.reg.no_rawat}'`)
+                        .then(res => {
+                            if (res[0].trx > 0) { trx[0] = true }
+                        })
+                        .catch(err => {
+                            console.error(err)
+                        })
+
+                    await db.doQuery(`SELECT
+                            COUNT(no_rawat) as trx
+                        FROM
+                            rawat_jl_pr
+                        WHERE
+                            no_rawat = '${this.reg.no_rawat}'`)
+                        .then(res => {
+                            if (res[0].trx > 0) { trx[1] = true }
+                        })
+                        .catch(err => {
+                            console.error(err)
+                        })
+
+                    await db.doQuery(`SELECT
+                            COUNT(no_rawat) as trx
+                        FROM
+                            rawat_jl_drpr
+                        WHERE
+                            no_rawat = '${this.reg.no_rawat}'`)
+                        .then(res => {
+                            if (res[0].trx > 0) { trx[2] = true }
+                        })
+                        .catch(err => {
+                            console.error(err)
+                        })
+
+                    await db.doQuery(`SELECT
+                            COUNT(no_rawat) as trx
+                        FROM
+                            periksa_lab
+                        WHERE
+                            no_rawat = '${this.reg.no_rawat}'`)
+                        .then(res => {
+                            if (res[0].trx > 0) { trx[3] = true }
+                        })
+                        .catch(err => {
+                            console.error(err)
+                        })
+
+                    await db.doQuery(`SELECT
+                            COUNT(no_rawat) as trx
+                        FROM
+                            kamar_inap
+                        WHERE
+                            no_rawat = '${this.reg.no_rawat}'`)
+                        .then(res => {
+                            if (res[0].trx > 0) { trx[4] = true }
+                        })
+                        .catch(err => {
+                            console.error(err)
+                        })
+
+                    const valid = trx.reduce((total, item) => { return total || item })
+
+                    if (valid) {
+                        alert('Tidak bisa menyimpan ubahan, pasien sudah ada transaksi sebelumnya')
                     } else {
-                        const trx = [false, false, false, false, false]
-
-                        await db.doQuery(`SELECT
-                                COUNT(no_rawat) as trx
-                            FROM
-                                rawat_jl_dr
-                            WHERE
-                                no_rawat = '${this.reg.no_rawat}'`)
-                            .then(res => {
-                                if (res[0].trx > 0) { trx[0] = true }
-                            })
-                            .catch(err => {
-                                console.error(err)
-                            })
-
-                        await db.doQuery(`SELECT
-                                COUNT(no_rawat) as trx
-                            FROM
-                                rawat_jl_pr
-                            WHERE
-                                no_rawat = '${this.reg.no_rawat}'`)
-                            .then(res => {
-                                if (res[0].trx > 0) { trx[1] = true }
-                            })
-                            .catch(err => {
-                                console.error(err)
-                            })
-
-                        await db.doQuery(`SELECT
-                                COUNT(no_rawat) as trx
-                            FROM
-                                rawat_jl_drpr
-                            WHERE
-                                no_rawat = '${this.reg.no_rawat}'`)
-                            .then(res => {
-                                if (res[0].trx > 0) { trx[2] = true }
-                            })
-                            .catch(err => {
-                                console.error(err)
-                            })
-
-                        await db.doQuery(`SELECT
-                                COUNT(no_rawat) as trx
-                            FROM
-                                periksa_lab
-                            WHERE
-                                no_rawat = '${this.reg.no_rawat}'`)
-                            .then(res => {
-                                if (res[0].trx > 0) { trx[3] = true }
-                            })
-                            .catch(err => {
-                                console.error(err)
-                            })
-
-                        await db.doQuery(`SELECT
-                                COUNT(no_rawat) as trx
-                            FROM
-                                kamar_inap
-                            WHERE
-                                no_rawat = '${this.reg.no_rawat}'`)
-                            .then(res => {
-                                if (res[0].trx > 0) { trx[4] = true }
-                            })
-                            .catch(err => {
-                                console.error(err)
-                            })
-
-                        const valid = trx.reduce((total, item) => { return total || item })
-
-                        if (valid) {
-                            alert('Tidak bisa menyimpan ubahan, pasien sudah ada transaksi sebelumnya')
-                        } else {
-                            updateReg()
-                        }
+                        updateReg()
                     }
                 }
             }

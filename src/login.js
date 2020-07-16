@@ -27,24 +27,18 @@ new Vue({
                 FROM admin 
                 WHERE usere=AES_ENCRYPT('${this.username}','nur') 
                     AND passworde=AES_ENCRYPT('${this.password}','windi')`)
-                .then(res => { 
+                .then(res => {
                     resAdmin = res
                     return db.doQuery(`SELECT * 
                         FROM user 
                         WHERE id_user=AES_ENCRYPT('${this.username}','nur') 
-                            AND password=AES_ENCRYPT('${this.password}','windi')`) 
+                            AND password=AES_ENCRYPT('${this.password}','windi')`)
                 })
                 .then(res => {
                     resUser = res
-                    
+
                     if (resAdmin.length !== 0 || resUser.length !== 0) {
                         ipc.sendSync('entry-accepted', 'ping')
-
-                        if (resAdmin.length !== 0) {
-                            ipc.sendSync('setAksesEdit', true)
-                        } else if (resUser.length !== 0) {
-                            ipc.sendSync('setAksesEdit', false)
-                        }
                     } else {
                         this.w.setSize(400, 370)
                         this.notif = 'Username atau Password salah'

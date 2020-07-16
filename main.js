@@ -1,11 +1,10 @@
-const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
 const menu = require('./menu')
 let mainWindow
 let childWindow
 let workerWindow
-let editAkses
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -68,14 +67,6 @@ ipcMain.on('readyToPrint', _event => {
             left: 0
         }
     })
-})
-
-ipcMain.on('setAksesEdit', (_event, args) => {
-    editAkses = args
-})
-
-ipcMain.on('getAksesEdit', event => {
-    event.returnValue = editAkses
 })
 
 ipcMain.on('close', (_event, _arg) => {
