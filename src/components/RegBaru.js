@@ -5,7 +5,7 @@ import { dbUtil } from '../dbconn.js'
 const RegBaru = {
     template: `
         <div class="container-fluid">
-            <h5>Pasien Baru</h5>
+            <h5 class="title">Pasien Baru</h5>
             <div class="row m-0">
                 <div class="col-md-4 p-0">
                     <div class="card p-0">

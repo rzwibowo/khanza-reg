@@ -1,7 +1,6 @@
 require('dotenv').config()
 const remote = require('electron').remote
 const ipcRenderer = require('electron').ipcRenderer
-const session = require('electron').session
 const hmac_sha256 = require('crypto-js/hmac-sha256')
 const enc_base64 = require('crypto-js/enc-base64')
 
@@ -359,7 +358,7 @@ const Reg = {
                                         <td style="white-space: nowrap">{{ pasien.nm_poli }}</td>
                                         <td>{{ pasien.stts_daftar }}</td>
                                     </tr>
-                                    <tr v-show="act_visible === idx">
+                                    <tr v-show="act_visible === idx" style="background-color: #C8E6C9;">
                                         <td colspan="13">
                                             <button type="button" class="btn btn-link btn-sm" 
                                                 @click="inap(pasien)">
@@ -483,9 +482,15 @@ const Reg = {
                     this.filterPasien()
                     return db.closeDb()
                 }, err => {
-                    return db.closeDb().then(() => { throw err })
+                    return db.closeDb().then(() => { 
+                        alert('Gagal ambil daftar pasien, ' + err)
+                        throw err 
+                    })
                 })
-                .catch(err => console.error(err))
+                .catch(err => {
+                    alert('Gagal ambil daftar pasien, ' + err)
+                    console.error(err)
+                })
         },
         filterPasien: function () {
             this.pasiens_f = this.pasiens
@@ -533,9 +538,15 @@ const Reg = {
                     this.pasien.no_rkm_medis = noRm
                     return db.closeDb()
                 }, err => {
-                    return db.closeDb().then(() => { throw err })
+                    return db.closeDb().then(() => { 
+                        alert('Gagal ambil data pasien, ' + err)
+                        throw err 
+                    })
                 })
-                .catch(err => console.error(err))
+                .catch(err => {
+                    alert('Gagal ambil data pasien, ' + err)
+                    console.error(err)
+                })
         },
         cariPasien: function () {
             if (this.pasien.no_rkm_medis.length >= 6) {
@@ -728,9 +739,17 @@ const Reg = {
                         .then(res => {
                             res[0].jml_periksa_poli > 0 ? status_poli = 'Lama' : status_poli = 'Baru'
                         }, err => {
-                            return db.closeDb().then(() => { throw err })
+                            return db.closeDb().then(() => {
+                                this.is_loading = false
+                                alert('Gagal simpan data registrasi, ' + err) 
+                                throw err 
+                            })
                         })
-                        .catch(err => console.error(err))
+                        .catch(err => {
+                            this.is_loading = false
+                            alert('Gagal simpan data registrasi, ' + err) 
+                            console.error(err)
+                        })
 
                     db.doQuery(`INSERT INTO
                             reg_periksa
@@ -767,11 +786,13 @@ const Reg = {
                         }, err => {
                             return db.closeDb().then(() => { 
                                 this.is_loading = false
+                                alert('Gagal simpan data registrasi, ' + err) 
                                 throw err 
                             })
                         })
                         .catch(err => {
                             this.is_loading = false
+                            alert('Gagal simpan data registrasi, ' + err) 
                             console.error(err)
                         })
                 } else {
@@ -808,11 +829,13 @@ const Reg = {
                             }, err => {
                                 return db.closeDb().then(() => { 
                                     this_.is_loading = false
+                                    alert('Gagal ubah data registrasi, ' + err) 
                                     throw err 
                                 })
                             })
                             .catch(err => {
                                 this_.is_loading = false
+                                alert('Gagal ubah data registrasi, ' + err) 
                                 console.error(err)
                             })
                     }
@@ -829,6 +852,8 @@ const Reg = {
                             if (res[0].trx > 0) { trx[0] = true }
                         })
                         .catch(err => {
+                            this.is_loading = false
+                            alert('Gagal ubah data registrasi, ' + err) 
                             console.error(err)
                         })
 
@@ -842,6 +867,8 @@ const Reg = {
                             if (res[0].trx > 0) { trx[1] = true }
                         })
                         .catch(err => {
+                            this.is_loading = false
+                            alert('Gagal ubah data registrasi, ' + err) 
                             console.error(err)
                         })
 
@@ -855,6 +882,8 @@ const Reg = {
                             if (res[0].trx > 0) { trx[2] = true }
                         })
                         .catch(err => {
+                            this.is_loading = false
+                            alert('Gagal ubah data registrasi, ' + err) 
                             console.error(err)
                         })
 
@@ -868,6 +897,8 @@ const Reg = {
                             if (res[0].trx > 0) { trx[3] = true }
                         })
                         .catch(err => {
+                            this.is_loading = false
+                            alert('Gagal ubah data registrasi, ' + err) 
                             console.error(err)
                         })
 
@@ -881,6 +912,8 @@ const Reg = {
                             if (res[0].trx > 0) { trx[4] = true }
                         })
                         .catch(err => {
+                            this.is_loading = false
+                            alert('Gagal ubah data registrasi, ' + err) 
                             console.error(err)
                         })
 
@@ -1050,9 +1083,15 @@ const Reg = {
 
                     return db.closeDb()
                 }, err => {
-                    return db.closeDb().then(() => { throw err })
+                    return db.closeDb().then(() => { 
+                        alert('Gagal ambil data pasien, ' + err)
+                        throw err 
+                    })
                 })
-                .catch(err => console.error(err))
+                .catch(err => {
+                    alert('Gagal ambil data pasien, ' + err)
+                    console.error(err)
+                })
 
             this.reg = px
             this.is_edit = true
