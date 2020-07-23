@@ -50,6 +50,10 @@ tr.selected {
     color: white;
 }
 
+.close:hover {
+    color: #E91E63;
+}
+
 .h85vh {
     height: 85vh;
     overflow-x: scroll;
