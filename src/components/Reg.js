@@ -3,6 +3,7 @@ const remote = require('electron').remote
 const ipcRenderer = require('electron').ipcRenderer
 const hmac_sha256 = require('crypto-js/hmac-sha256')
 const enc_base64 = require('crypto-js/enc-base64')
+const contextMenu = require('electron-context-menu')
 
 import { RegInapD } from './RegInapD.js'
 import { CariPasienD } from './CariPasienD.js'
@@ -345,18 +346,18 @@ const Reg = {
                                                 <span v-show="act_visible === idx">▲</span>
                                             </button>
                                         </td>
-                                        <td>{{ pasien.no_reg }}</td>
-                                        <td>{{ pasien.no_rkm_medis }}</td>
-                                        <td style="white-space: nowrap">{{ moment(pasien.tgl_registrasi).format('DD-MM-YYYY') }}</td>
-                                        <td>{{ pasien.jam_reg }}</td>
-                                        <td style="white-space: nowrap">{{ pasien.nm_pasien }}</td>
-                                        <td>{{ pasien.umur }}</td>
-                                        <td style="white-space: nowrap">{{ moment(pasien.tgl_lahir).format('DD-MM-YYYY') }}</td>
-                                        <td>{{ pasien.jk }}</td>
-                                        <td>{{ pasien.alamat }}</td>
-                                        <td style="white-space: nowrap">{{ pasien.nm_dokter }}</td>
-                                        <td style="white-space: nowrap">{{ pasien.nm_poli }}</td>
-                                        <td>{{ pasien.stts_daftar }}</td>
+                                        <td title="data-pasien">{{ pasien.no_reg }}</td>
+                                        <td title="data-pasien">{{ pasien.no_rkm_medis }}</td>
+                                        <td title="data-pasien" style="white-space: nowrap">{{ moment(pasien.tgl_registrasi).format('DD-MM-YYYY') }}</td>
+                                        <td title="data-pasien">{{ pasien.jam_reg }}</td>
+                                        <td title="data-pasien" style="white-space: nowrap">{{ pasien.nm_pasien }}</td>
+                                        <td title="data-pasien">{{ pasien.umur }}</td>
+                                        <td title="data-pasien" style="white-space: nowrap">{{ moment(pasien.tgl_lahir).format('DD-MM-YYYY') }}</td>
+                                        <td title="data-pasien">{{ pasien.jk }}</td>
+                                        <td title="data-pasien">{{ pasien.alamat }}</td>
+                                        <td title="data-pasien" style="white-space: nowrap">{{ pasien.nm_dokter }}</td>
+                                        <td title="data-pasien" style="white-space: nowrap">{{ pasien.nm_poli }}</td>
+                                        <td title="data-pasien">{{ pasien.stts_daftar }}</td>
                                     </tr>
                                     <tr v-show="act_visible === idx" style="background-color: #C8E6C9;">
                                         <td colspan="13">
@@ -437,6 +438,7 @@ const Reg = {
         this.getListPoliklinik()
         this.getListDokter()
         this.getListRujukan()
+        this.initContextMenu()
     },
     methods: {
         defaultTglList: function () {
@@ -1112,6 +1114,16 @@ const Reg = {
                     jaminan: this.pasien.png_jawab,
                     tgl_reg: moment(this.pasien.tgl_daftar).locale('id').format('DD/MM/YY')
                 }
+            })
+        },
+        initContextMenu: function () {
+            contextMenu({
+                prepend: (_defaultAction, params, _browserWindow) => [
+                    {
+                        label: 'BOOMJAH' + params.titleText,
+                        visible: params.titleText === 'data-pasien'
+                    }
+                ]
             })
         }
     }
