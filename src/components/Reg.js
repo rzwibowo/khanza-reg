@@ -338,7 +338,8 @@ const Reg = {
                             </thead>
                             <tbody>
                                 <template v-for="(pasien, idx) in pasiens_f" :key="pasien.no_reg">
-                                    <tr @click="row_select = idx" :class="{selected: row_select === idx}">
+                                    <tr @click="row_select = idx" @contextmenu="row_select = idx" 
+                                        :class="{selected: row_select === idx}">
                                         <td>
                                             <button class="btn btn-secondary btn-sm btn-action" 
                                                 @click="act_visible === idx ? act_visible = null : act_visible = idx">
@@ -1117,11 +1118,13 @@ const Reg = {
             })
         },
         initContextMenu: function () {
+            const this_ = this
             contextMenu({
                 prepend: (_defaultAction, params, _browserWindow) => [
                     {
-                        label: 'BOOMJAH' + params.titleText,
-                        visible: params.titleText === 'data-pasien'
+                        label: 'Register Rawat Inap',
+                        visible: params.titleText === 'data-pasien',
+                        click: () => { this_.inap(this_.pasiens_f[this_.row_select]) }
                     }
                 ]
             })
